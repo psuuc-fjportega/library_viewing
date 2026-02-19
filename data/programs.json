@@ -1,0 +1,98 @@
+{
+  "hero": {
+    "title": "Library Program",
+    "subtitle": "Explore ongoing programs and services offered by the library."
+  },
+  "list": [
+    {
+      "name": "Current Awareness",
+      "slug": "current-awareness",
+      "summary": "Updates on new information resources, announcements, and awareness activities."
+    },
+    {
+      "name": "Reading Challenge",
+      "slug": "reading-challenge",
+      "summary": "Encourages consistent reading through fun goals and progress tracking."
+    },
+    {
+      "name": "E - TV",
+      "slug": "e-tv",
+      "summary": "Educational viewing sessions and media-based learning activities."
+    },
+    {
+      "name": "Aldaw Ti Pagbasa",
+      "slug": "aldaw-ti-pagbasa",
+      "summary": "A community reading day that promotes reading culture and participation."
+    },
+    {
+      "name": "Story Telling",
+      "slug": "story-telling",
+      "summary": "Storytelling sessions to build imagination, listening skills, and love for books."
+    },
+    {
+      "name": "Intayo Sukisuken",
+      "slug": "intayo-sukisuken",
+      "summary": "A program that encourages curiosity, exploration, and learning through reading."
+    },
+    {
+      "name": "A Law A Day",
+      "slug": "a-law-a-day",
+      "summary": "Daily learning bites on laws, rights, and basic legal awareness."
+    },
+    {
+      "name": "Tracing Back",
+      "slug": "tracing-back",
+      "summary": "Local history and heritage features to understand the city’s roots."
+    },
+    {
+      "name": "Reader's Advisory",
+      "slug": "readers-advisory",
+      "summary": "Get book recommendations based on your interests and reading level."
+    },
+    {
+      "name": "Bloom",
+      "slug": "bloom",
+      "summary": "A growth-focused reading and learning program for personal development."
+    },
+    {
+      "name": "Book Drive",
+      "slug": "book-drive",
+      "summary": "Donate books to help expand access to reading materials in the community."
+    },
+    {
+      "name": "I want to be techy / Let's explore the web",
+      "slug": "lets-explore-the-web",
+      "summary": "Beginner-friendly web and computer basics for learners of all ages."
+    },
+    {
+      "name": "Home Visitation",
+      "slug": "home-visitation",
+      "summary": "Outreach visits to promote reading and library services in homes/community."
+    },
+    {
+      "name": "Because We Care",
+      "slug": "because-we-care",
+      "summary": "Community support initiative through learning resources and library services."
+    },
+    {
+      "name": "Library Orientation",
+      "slug": "library-orientation",
+      "summary": "Guided orientation on how to use library resources and services."
+    },
+    {
+      "name": "Tech4Ed",
+      "slug": "tech4ed",
+      "summary": "Digital literacy training: computer basics, online safety, and productivity tools."
+    },
+    {
+      "name": "Barangay Reading Center",
+      "slug": "barangay-reading-center",
+      "summary": "Reading hubs in barangays to bring books closer to learners."
+    },
+    {
+      "name": "Barangay Pangserbisyo",
+      "slug": "barangay-pangserbisyo",
+      "summary": "Community service support activities and informational assistance."
+    }
+  ]
+}

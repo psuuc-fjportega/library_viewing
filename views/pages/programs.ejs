@@ -1,0 +1,25 @@
+<%
+  const pageData = typeof data !== "undefined" ? data : {};
+  const hero = pageData.hero || {};
+  const list = Array.isArray(pageData.list) ? pageData.list : [];
+%>
+
+<section class="page-header">
+  <h1><%= hero.title || "Library Program" %></h1>
+  <p class="muted"><%= hero.subtitle || "Browse library programs." %></p>
+</section>
+
+<div class="card" style="padding:0;">
+  <div class="program-list">
+    <% if (list.length === 0) { %>
+      <div class="empty-state" style="margin:18px;">No programs listed yet.</div>
+    <% } else { %>
+      <% list.forEach((p) => { %>
+        <a class="program-item" href="/programs/<%= p.slug %>">
+          <span class="program-name"><%= p.name %></span>
+          <span class="program-arrow">→</span>
+        </a>
+      <% }) %>
+    <% } %>
+  </div>
+</div>

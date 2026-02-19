@@ -1,0 +1,39 @@
+<section class="program-page">
+  <header class="program-hero">
+    <div class="program-hero-text">
+      <h1><%= program.name %></h1>
+      <p class="muted"><%= program.summary || "Details coming soon." %></p>
+
+      <div class="program-cta-row">
+        <a class="btn btn-primary" href="/contact">Inquire</a>
+        <a class="btn" href="/programs">← Back to Programs</a>
+      </div>
+    </div>
+
+    <div class="program-hero-media">
+      <div class="img-placeholder">
+        <span>Image Placeholder</span>
+        <small>/public/assets/images/programs/<%= program.slug %>.jpg</small>
+      </div>
+    </div>
+  </header>
+
+  <section class="program-section">
+    <h2>About this program</h2>
+    <p>
+      This section will contain the full description, objectives, target participants, schedule,
+      and how to join. You can update this later from <code>data/programs.json</code>.
+    </p>
+  </section>
+
+  <section class="program-section grid-2">
+    <div class="card">
+      <h3>Schedule</h3>
+      <div class="empty-state">Schedule details coming soon.</div>
+    </div>
+    <div class="card">
+      <h3>Location</h3>
+      <div class="empty-state">Location details coming soon.</div>
+    </div>
+  </section>
+</section>
