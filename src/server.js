@@ -1,3 +1,5 @@
+const multer = require("multer");
+const GalleryImage = require("./models/GalleryImage");
 require("dotenv").config();
 
 const fs = require("fs");
@@ -31,6 +33,34 @@ app.use(
 
 // Static files
 app.use(express.static(path.join(__dirname, "../public")));
+
+const galleryUploadDir = path.join(__dirname, "../public/assets/gallery/uploads");
+
+// ensure folder exists
+const fs2 = require("fs");
+if (!fs2.existsSync(galleryUploadDir)) fs2.mkdirSync(galleryUploadDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, galleryUploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const safeName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, safeName);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowed = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+  if (allowed.includes(file.mimetype)) cb(null, true);
+  else cb(new Error("Only JPG/PNG/WEBP images are allowed."), false);
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 15 * 1024 * 1024 } // 15mb per image
+});
+
 
 // View engine
 app.set("view engine", "ejs");
@@ -121,8 +151,13 @@ app.get("/programs/:slug", (req, res) => {
 });
 
 // Gallery
-app.get("/gallery", (req, res) => {
-  res.render("pages/gallery", { title: "Gallery" });
+app.get("/gallery", async (req, res) => {
+  const images = await GalleryImage.find().sort({ createdAt: -1 });
+
+  res.render("pages/gallery", {
+    title: "Gallery",
+    images,
+  });
 });
 
 // Policies
@@ -207,7 +242,7 @@ app.get("/contact", (req, res) => {
 // --------------------
 
 // Include Multer for Admin Gallery handling
-const multer = require("multer");
+
 const galleryStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     const dir = path.join(__dirname, "../public/assets/gallery");
@@ -318,6 +353,51 @@ app.post("/admin/logout", (req, res) => {
     res.redirect("/admin/login");
   });
 });
+// Admin Gallery (view + upload)
+app.get("/admin/gallery", requireAdmin, async (req, res) => {
+  const images = await GalleryImage.find().sort({ createdAt: -1 });
+  res.render("pages/admin-gallery", { title: "Admin — Gallery", images });
+});
+
+// Multiple upload: up to 20 images in one submit
+app.post("/admin/gallery/upload", requireAdmin, upload.array("images", 20), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.redirect("/admin/gallery");
+    }
+
+    const docs = req.files.map(f => ({
+      filename: f.filename,
+      originalname: f.originalname,
+      caption: "UCPL Gallery"
+    }));
+
+    await GalleryImage.insertMany(docs);
+    return res.redirect("/admin/gallery");
+  } catch (err) {
+    console.error("Upload error:", err);
+    return res.status(500).send("Upload failed.");
+  }
+});
+
+// Optional: delete image
+app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
+  try {
+    const img = await GalleryImage.findById(req.params.id);
+    if (!img) return res.redirect("/admin/gallery");
+
+    // remove file
+    const fp = path.join(galleryUploadDir, img.filename);
+    if (fs2.existsSync(fp)) fs2.unlinkSync(fp);
+
+    await GalleryImage.findByIdAndDelete(req.params.id);
+    res.redirect("/admin/gallery");
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("Delete failed.");
+  }
+});
+
 
 // --------------------
 // 404 PAGE (KEEP LAST)

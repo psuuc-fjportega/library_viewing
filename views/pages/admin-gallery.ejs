@@ -1,0 +1,40 @@
+<section class="page-header">
+  <h1>Admin — Gallery</h1>
+  <p class="muted">Upload multiple images at once. These will appear in the public Gallery page.</p>
+</section>
+
+<div style="display:flex; gap:10px; margin-bottom:16px;">
+  <a href="/admin/inquiries" class="btn btn-outline btn-small">← Back to Inquiries</a>
+</div>
+
+<section class="card">
+  <h2 style="margin-bottom:10px;">Upload Images</h2>
+
+  <form action="/admin/gallery/upload" method="POST" enctype="multipart/form-data" class="form">
+    <label>Select images (multiple)</label>
+    <input type="file" name="images" accept="image/*" multiple required />
+    <button class="btn btn-primary" type="submit">Upload</button>
+    <p class="muted" style="margin:0;">Tip: You can select many images in one upload.</p>
+  </form>
+</section>
+
+<section class="card" style="margin-top:16px;">
+  <h2 style="margin-bottom:10px;">Uploaded Images</h2>
+
+  <% if (!images || images.length === 0) { %>
+    <p class="muted">No images uploaded yet.</p>
+  <% } else { %>
+    <div class="gallery-grid">
+      <% images.forEach(img => { %>
+        <div class="gallery-item">
+          <img src="/assets/gallery/uploads/<%= img.filename %>" alt="<%= img.caption %>">
+          <div class="gallery-caption"><%= img.caption %></div>
+
+          <form action="/admin/gallery/<%= img._id %>/delete" method="POST" style="position:absolute; top:10px; right:10px;">
+            <button class="btn btn-danger btn-small" type="submit">Delete</button>
+          </form>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>

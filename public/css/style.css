@@ -1582,3 +1582,48 @@ h3 {
   background: rgba(0, 0, 0, .08);
   margin: 16px 0;
 }
+
+/* ===========================
+   POLICIES TEXT VISIBILITY FIX
+   =========================== */
+
+/* Accordion container (already fine) */
+.accordion-item {
+  background: var(--surface);
+}
+
+/* Button text should be dark and readable */
+.accordion-btn {
+  color: var(--royal);
+}
+
+/* Panel text should NOT be white */
+.accordion-panel,
+.accordion-panel ul,
+.accordion-panel li {
+  color: var(--text) !important;
+}
+
+/* Keep strong emphasis visible */
+.accordion-panel strong {
+  color: var(--wine);
+}
+
+/* Improve readability spacing */
+.accordion-panel ul {
+  margin: 12px 0 16px;
+  padding-left: 18px;
+}
+
+/* Optional: subtle panel background for separation */
+.accordion-panel {
+  background: rgba(184, 145, 72, 0.06);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Icon color fix (your icon is very light now) */
+.accordion-icon {
+  color: var(--wine);
+  border-color: rgba(184, 145, 72, 0.35);
+  background: rgba(184, 145, 72, 0.10);
+}

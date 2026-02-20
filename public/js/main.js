@@ -127,3 +127,41 @@ if (brand) {
     }
   });
 }
+
+// --------------------
+// Gallery Lightbox (click to enlarge)
+// --------------------
+(() => {
+  const galleryImages = document.querySelectorAll(".gallery-item img");
+  const lightbox = document.getElementById("lightbox");
+  if (!lightbox || galleryImages.length === 0) return;
+
+  const lightboxImg = lightbox.querySelector(".lightbox-img");
+  const closeBtn = lightbox.querySelector(".lightbox-close");
+  const caption = lightbox.querySelector(".lightbox-caption");
+
+  const open = (img) => {
+    lightbox.classList.add("open");
+    lightboxImg.src = img.src;
+    lightboxImg.alt = img.alt || "Gallery Image";
+    if (caption) caption.textContent = img.alt || "";
+    document.body.style.overflow = "hidden";
+  };
+
+  const close = () => {
+    lightbox.classList.remove("open");
+    lightboxImg.src = "";
+    document.body.style.overflow = "";
+  };
+
+  galleryImages.forEach(img => img.addEventListener("click", () => open(img)));
+  closeBtn.addEventListener("click", close);
+
+  lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) close();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+  });
+})();
