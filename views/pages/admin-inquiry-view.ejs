@@ -1,0 +1,56 @@
+<section class="page-header">
+  <h1>Inquiry Details</h1>
+  <p class="muted">Submitted by <strong><%= inquiry.name %></strong></p>
+</section>
+
+<div class="card">
+  <div class="detail-grid">
+    <div>
+      <div class="muted">Name</div>
+      <div><strong><%= inquiry.name %></strong></div>
+    </div>
+
+    <div>
+      <div class="muted">Email</div>
+      <div><%= inquiry.email %></div>
+    </div>
+
+    <div>
+      <div class="muted">Category</div>
+      <div><%= inquiry.category %></div>
+    </div>
+
+    <div>
+      <div class="muted">Status</div>
+      <div>
+        <span class="pill <%= inquiry.status === 'resolved' ? 'pill-ok' : 'pill-new' %>">
+          <%= inquiry.status %>
+        </span>
+      </div>
+    </div>
+
+    <div>
+      <div class="muted">Date Submitted</div>
+      <div><%= new Date(inquiry.createdAt).toLocaleString() %></div>
+    </div>
+  </div>
+
+  <hr class="hr" />
+
+  <h3 style="margin-top:0;">Message</h3>
+  <p style="white-space:pre-wrap;"><%= inquiry.message %></p>
+
+  <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;">
+    <% if (inquiry.status !== "resolved") { %>
+      <form method="POST" action="/admin/inquiries/<%= inquiry._id %>/resolve">
+        <button class="btn btn-primary" type="submit">Mark as Resolved</button>
+      </form>
+    <% } %>
+
+    <form method="POST" action="/admin/inquiries/<%= inquiry._id %>/delete" onsubmit="return confirm('Delete this inquiry?');">
+      <button class="btn btn-danger" type="submit">Delete</button>
+    </form>
+
+    <a class="btn" href="/admin/inquiries">← Back</a>
+  </div>
+</div>

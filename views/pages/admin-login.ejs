@@ -1,0 +1,18 @@
+<section class="page-header">
+  <h1>Admin Login</h1>
+  <p class="muted">Authorized access only.</p>
+</section>
+
+<div class="card" style="max-width:520px; margin:0 auto;">
+  <% if (typeof error !== "undefined") { %>
+    <div class="note-box" style="border-color: rgba(255,80,80,.4); margin-bottom:14px;">
+      ❌ <%= error %>
+    </div>
+  <% } %>
+
+  <form class="form" method="POST" action="/admin/login">
+    <label>Admin Password</label>
+    <input type="password" name="password" placeholder="Enter password" required />
+    <button class="btn btn-primary" type="submit">Login</button>
+  </form>
+</div>

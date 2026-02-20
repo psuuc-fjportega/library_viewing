@@ -5,40 +5,50 @@
   </p>
 </section>
 
+
+
 <section class="grid-2">
+  <% if (typeof success !== "undefined" && success) { %>
+  <div class="note-box" style="margin-top:14px;">
+    ✅ Your inquiry was sent. We’ll get back to you soon.
+  </div>
+<% } %>
+
+<% if (typeof error !== "undefined" && error) { %>
+  <div class="note-box" style="margin-top:14px; border-color: rgba(255,80,80,.4);">
+    ❌ <%= error %>
+  </div>
+<% } %>
+
   <div class="card">
     <h2>Send Your Question</h2>
     <p class="muted" style="margin-top:0;">
       Please provide complete details so we can respond faster.
     </p>
 
-    <form class="form">
-      <label>Full Name</label>
-      <input type="text" placeholder="Enter your name" required>
+  <form class="form" method="POST" action="/ask-a-librarian">
+  <label>Full Name</label>
+  <input name="name" type="text" placeholder="Enter your name" required>
 
-      <label>Email Address</label>
-      <input type="email" placeholder="Enter your email" required>
+  <label>Email Address</label>
+  <input name="email" type="email" placeholder="Enter your email" required>
 
-      <label>Category</label>
-      <select required>
-        <option value="">Select a category</option>
-        <option>Book Inquiry</option>
-        <option>Research Assistance</option>
-        <option>Library Membership</option>
-        <option>Programs & Events</option>
-        <option>Tech4Ed / Computer Use</option>
-        <option>Other</option>
-      </select>
+  <label>Category</label>
+  <select name="category" required>
+    <option value="">Select a category</option>
+    <option>Book Inquiry</option>
+    <option>Research Assistance</option>
+    <option>Library Membership</option>
+    <option>Programs & Events</option>
+    <option>Tech4Ed / Computer Use</option>
+    <option>Other</option>
+  </select>
 
-      <label>Your Question</label>
-      <textarea rows="5" placeholder="Type your question here..." required></textarea>
+  <label>Your Question</label>
+  <textarea name="message" rows="5" placeholder="Type your question here..." required></textarea>
 
-      <button type="submit" class="btn btn-primary">Submit Inquiry</button>
-    </form>
-
-    <div class="note-box" style="margin-top:14px;">
-      <strong>Note:</strong> This form is currently a placeholder. Later, we can connect it to a database or email system.
-    </div>
+  <button type="submit" class="btn btn-primary">Submit Inquiry</button>
+</form>
   </div>
 
   <div class="card">
