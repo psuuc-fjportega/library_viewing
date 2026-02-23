@@ -37,8 +37,8 @@ app.use(express.static(path.join(__dirname, "../public")));
 const galleryUploadDir = path.join(__dirname, "../public/assets/gallery/uploads");
 
 // ensure folder exists
-const fs2 = require("fs");
-if (!fs2.existsSync(galleryUploadDir)) fs2.mkdirSync(galleryUploadDir, { recursive: true });
+
+if (!fs.existsSync(galleryUploadDir)) fs.mkdirSync(galleryUploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, galleryUploadDir),
@@ -243,48 +243,40 @@ app.get("/contact", (req, res) => {
 
 // Include Multer for Admin Gallery handling
 
-const galleryStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const dir = path.join(__dirname, "../public/assets/gallery");
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, '-'));
-  }
-});
-const uploadGallery = multer({ storage: galleryStorage });
+// const galleryStorage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     const dir = path.join(__dirname, "../public/assets/gallery");
+//     if (!fs.existsSync(dir)) {
+//       fs.mkdirSync(dir, { recursive: true });
+//     }
+//     cb(null, dir);
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, Date.now() + "-" + file.originalname.replace(/\s+/g, '-'));
+//   }
+// });
+// const uploadGallery = multer({ storage: galleryStorage });
 
 // Admin: list
 app.get("/admin/inquiries", requireAdmin, async (req, res) => {
-  try {
-    const inquiries = await Inquiry.find().sort({ createdAt: -1 });
-    res.render("pages/admin-inquiries", {
-      title: "Admin — Inquiries",
-      inquiries,
-    });
-  } catch (e) {
-    console.error("Admin list error:", e);
-    res.status(500).send("Server error");
-  }
+  const inquiries = await Inquiry.find().sort({ createdAt: -1 });
+  res.render("pages/admin-inquiries", {
+    title: "Admin — Inquiries",
+    inquiries,
+    layout: "layouts/admin",
+  });
 });
+
 // Admin: view single
 app.get("/admin/inquiries/:id", requireAdmin, async (req, res) => {
-  try {
-    const inquiry = await Inquiry.findById(req.params.id);
-    if (!inquiry)
-      return res.status(404).render("pages/404", { title: "Not Found" });
+  const inquiry = await Inquiry.findById(req.params.id);
+  if (!inquiry) return res.status(404).render("pages/404", { title: "Not Found" });
 
-    res.render("pages/admin-inquiry-view", {
-      title: `Inquiry — ${inquiry.name}`,
-      inquiry,
-    });
-  } catch (e) {
-    console.error("Admin view error:", e);
-    res.status(500).send("Server error");
-  }
+  res.render("pages/admin-inquiry-view", {
+    title: `Inquiry — ${inquiry.name}`,
+    inquiry,
+    layout: "layouts/admin",
+  });
 });
 
 // Admin: resolve
@@ -320,7 +312,10 @@ app.post("/admin/inquiries/:id/delete", requireAdmin, async (req, res) => {
 
 // Admin login page
 app.get("/admin/login", (req, res) => {
-  res.render("pages/admin-login", { title: "Admin Login" });
+  res.render("pages/admin-login", {
+    title: "Admin Login",
+    layout: "layouts/admin",
+  });
 });
 
 //admin fix status
@@ -356,7 +351,11 @@ app.post("/admin/logout", (req, res) => {
 // Admin Gallery (view + upload)
 app.get("/admin/gallery", requireAdmin, async (req, res) => {
   const images = await GalleryImage.find().sort({ createdAt: -1 });
-  res.render("pages/admin-gallery", { title: "Admin — Gallery", images });
+  res.render("pages/admin-gallery", {
+    title: "Admin — Gallery",
+    images,
+    layout: "layouts/admin",
+  });
 });
 
 // Multiple upload: up to 20 images in one submit
@@ -367,10 +366,10 @@ app.post("/admin/gallery/upload", requireAdmin, upload.array("images", 20), asyn
     }
 
     const docs = req.files.map(f => ({
-      filename: f.filename,
-      originalname: f.originalname,
-      caption: "UCPL Gallery"
-    }));
+  filename: f.filename,
+  originalName: f.originalname, // ✅ EXACT FIELD NAME
+  caption: "UCPL Gallery"
+}));{ }
 
     await GalleryImage.insertMany(docs);
     return res.redirect("/admin/gallery");
@@ -388,7 +387,7 @@ app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
 
     // remove file
     const fp = path.join(galleryUploadDir, img.filename);
-    if (fs2.existsSync(fp)) fs2.unlinkSync(fp);
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
 
     await GalleryImage.findByIdAndDelete(req.params.id);
     res.redirect("/admin/gallery");

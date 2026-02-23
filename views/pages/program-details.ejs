@@ -10,30 +10,22 @@
       </div>
     </div>
 
-    <div class="program-hero-media">
-      <div class="img-placeholder">
-        <span>Image Placeholder</span>
-        <small>/public/assets/images/programs/<%= program.slug %>.jpg</small>
-      </div>
-    </div>
+   <div class="program-hero-media">
+  <img
+    class="program-image"
+    src="/assets/images/programs/<%= program.slug %>.jpg"
+    alt="<%= program.name %>"
+    onerror="this.style.display='none'; this.insertAdjacentHTML('afterend','<div class=&quot;img-placeholder&quot;><span>No image yet</span></div>')"
+  />
+</div>
   </header>
 
   <section class="program-section">
     <h2>About this program</h2>
-    <p>
-      This section will contain the full description, objectives, target participants, schedule,
-      and how to join. You can update this later from <code>data/programs.json</code>.
-    </p>
+  <p>
+  <%= program.description || "Full description coming soon." %>
+</p>
   </section>
 
-  <section class="program-section grid-2">
-    <div class="card">
-      <h3>Schedule</h3>
-      <div class="empty-state">Schedule details coming soon.</div>
-    </div>
-    <div class="card">
-      <h3>Location</h3>
-      <div class="empty-state">Location details coming soon.</div>
-    </div>
-  </section>
+ 
 </section>

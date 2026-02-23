@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const GalleryImageSchema = new mongoose.Schema(
   {
     filename: { type: String, required: true }, // stored file name in /public/assets/gallery/
-    originalName: { type: String, required: true },
+    originalName: { type: String, default: "" },
     caption: { type: String, default: "UCPL Gallery" },
   },
   { timestamps: true }
