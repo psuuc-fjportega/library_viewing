@@ -1,0 +1,47 @@
+<section class="page-header fade-in">
+    <h1>Barangay Reading Centers</h1>
+    <p class="muted">The Library Fun Day is a community-based literacy and early learning initiative of the Urdaneta
+        City Library and Tech4ED Center, implemented through the network of Barangay Reading Centers (BRCs) in close
+        coordination with partner agencies, particularly the City Social Welfare and Development Office (CSWDO) and
+        other concerned local stakeholders. The program is designed to promote a sustained culture of reading, learning,
+        and positive developmental engagement among children, with primary focus on those enrolled in Child Development
+        Centers (CDCs) across Urdaneta City.
+        Anchored in the principles of accessibility, inclusivity, and child-centered learning, the Library Fun Day
+        extends library services beyond the City Library's physical premises into barangay communities, ensuring that
+        young learners, especially those in underserved areas, are provided equitable access to quality literacy
+        experiences.
+    </p>
+</section>
+
+<section class="container fade-in" style="animation-delay: 0.1s;">
+    <% if (!brcs || brcs.length===0) { %>
+        <p class="muted" style="text-align: center; margin: 40px 0;">No reading centers available at the moment.</p>
+        <% } else { %>
+            <div class="programs-grid">
+                <% brcs.forEach(b=> { %>
+                    <div class="card p-card">
+                        <% if (b.coverImage) { %>
+                            <img class="p-card-img" src="/assets/brc/uploads/<%= b.coverImage %>"
+                                alt="<%= b.name %> Cover" style="width: 100%; height: 220px; object-fit: cover;">
+                            <% } else { %>
+                                <div class="p-card-img"
+                                    style="background-color: #eee; display: flex; align-items: center; justify-content: center; height: 220px; width: 100%;">
+                                    <span class="muted" style="font-size: 0.9rem;">No Image</span>
+                                </div>
+                                <% } %>
+                                    <div class="p-card-content">
+                                        <h2 class="p-card-title">
+                                            <%= b.name %>
+                                        </h2>
+                                        <p class="p-card-desc">
+                                            <%= b.statement.length> 100 ? b.statement.substring(0, 100) + '...' :
+                                                b.statement %>
+                                        </p>
+                                        <a href="/brc/<%= b.slug %>" class="btn btn-primary"
+                                            style="margin-top:auto; align-self:start;">View Details</a>
+                                    </div>
+                    </div>
+                    <% }) %>
+            </div>
+            <% } %>
+</section>

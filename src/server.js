@@ -11,6 +11,7 @@ const nodemailer = require("nodemailer");
 const session = require("express-session");
 
 const Inquiry = require("./models/Inquiry");
+const Brc = require("./models/Brc"); // BRC Model
 
 const app = express();
 
@@ -59,6 +60,25 @@ const upload = multer({
   storage,
   fileFilter,
   limits: { fileSize: 15 * 1024 * 1024 } // 15mb per image
+});
+
+// BRC Multer Setup
+const brcUploadDir = path.join(__dirname, "../public/assets/brc/uploads");
+if (!fs.existsSync(brcUploadDir)) fs.mkdirSync(brcUploadDir, { recursive: true });
+
+const brcStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, brcUploadDir),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const safeName = `brc-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, safeName);
+  }
+});
+
+const uploadBrc = multer({
+  storage: brcStorage,
+  fileFilter,
+  limits: { fileSize: 15 * 1024 * 1024 }
 });
 
 
@@ -150,13 +170,22 @@ app.get("/programs/:slug", (req, res) => {
   }
 });
 
-// Gallery
+// Gallery (paginated – 20 per page)
 app.get("/gallery", async (req, res) => {
-  const images = await GalleryImage.find().sort({ createdAt: -1 });
+  const LIMIT = 20;
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const total = await GalleryImage.countDocuments();
+  const totalPages = Math.ceil(total / LIMIT);
+  const images = await GalleryImage.find()
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * LIMIT)
+    .limit(LIMIT);
 
   res.render("pages/gallery", {
     title: "Gallery",
     images,
+    currentPage: page,
+    totalPages,
   });
 });
 
@@ -257,12 +286,21 @@ app.get("/contact", (req, res) => {
 // });
 // const uploadGallery = multer({ storage: galleryStorage });
 
-// Admin: list
+// Admin: list (paginated – 15 per page)
 app.get("/admin/inquiries", requireAdmin, async (req, res) => {
-  const inquiries = await Inquiry.find().sort({ createdAt: -1 });
+  const LIMIT = 15;
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const total = await Inquiry.countDocuments();
+  const totalPages = Math.ceil(total / LIMIT);
+  const inquiries = await Inquiry.find()
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * LIMIT)
+    .limit(LIMIT);
   res.render("pages/admin-inquiries", {
     title: "Admin — Inquiries",
     inquiries,
+    currentPage: page,
+    totalPages,
     layout: "layouts/admin",
   });
 });
@@ -348,12 +386,21 @@ app.post("/admin/logout", (req, res) => {
     res.redirect("/admin/login");
   });
 });
-// Admin Gallery (view + upload)
+// Admin Gallery (view + upload, paginated – 15 per page)
 app.get("/admin/gallery", requireAdmin, async (req, res) => {
-  const images = await GalleryImage.find().sort({ createdAt: -1 });
+  const LIMIT = 15;
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const total = await GalleryImage.countDocuments();
+  const totalPages = Math.ceil(total / LIMIT);
+  const images = await GalleryImage.find()
+    .sort({ createdAt: -1 })
+    .skip((page - 1) * LIMIT)
+    .limit(LIMIT);
   res.render("pages/admin-gallery", {
     title: "Admin — Gallery",
     images,
+    currentPage: page,
+    totalPages,
     layout: "layouts/admin",
   });
 });
@@ -366,10 +413,10 @@ app.post("/admin/gallery/upload", requireAdmin, upload.array("images", 20), asyn
     }
 
     const docs = req.files.map(f => ({
-  filename: f.filename,
-  originalName: f.originalname, // ✅ EXACT FIELD NAME
-  caption: "UCPL Gallery"
-}));{ }
+      filename: f.filename,
+      originalName: f.originalname, // ✅ EXACT FIELD NAME
+      caption: "UCPL Gallery"
+    })); { }
 
     await GalleryImage.insertMany(docs);
     return res.redirect("/admin/gallery");
@@ -397,6 +444,192 @@ app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
   }
 });
 
+
+// --------------------
+// ADMIN BRC ROUTES
+// --------------------
+
+// List BRCs
+app.get("/admin/brc", requireAdmin, async (req, res) => {
+  try {
+    const brcs = await Brc.find().sort({ createdAt: -1 });
+    res.render("pages/admin-brc", {
+      title: "Admin — BRC",
+      brcs,
+      layout: "layouts/admin",
+    });
+  } catch (err) {
+    console.error("Error fetching BRCs:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Add New BRC Form
+app.get("/admin/brc/new", requireAdmin, (req, res) => {
+  res.render("pages/admin-brc-form", {
+    title: "Admin — Add BRC",
+    layout: "layouts/admin",
+    brc: null, // Indicates new entry
+  });
+});
+
+// Handle Add New BRC
+app.post("/admin/brc", requireAdmin, uploadBrc.fields([{ name: "coverImage", maxCount: 1 }, { name: "images", maxCount: 20 }]), async (req, res) => {
+  try {
+    const { name, statement } = req.body;
+    let coverImage = "";
+    let images = [];
+
+    if (req.files) {
+      if (req.files.coverImage && req.files.coverImage.length > 0) {
+        coverImage = req.files.coverImage[0].filename;
+      }
+      if (req.files.images && req.files.images.length > 0) {
+        images = req.files.images.map(f => f.filename);
+      }
+    }
+
+    await Brc.create({ name, statement, coverImage, images });
+    res.redirect("/admin/brc");
+  } catch (err) {
+    console.error("Error adding BRC:", err);
+    res.status(500).send("Error adding BRC. Please try again.");
+  }
+});
+
+// Edit BRC Form
+app.get("/admin/brc/:id/edit", requireAdmin, async (req, res) => {
+  try {
+    const brc = await Brc.findById(req.params.id);
+    if (!brc) return res.status(404).render("pages/404", { title: "Not Found" });
+
+    res.render("pages/admin-brc-form", {
+      title: "Admin — Edit BRC",
+      layout: "layouts/admin",
+      brc,
+    });
+  } catch (err) {
+    console.error("Error fetching BRC:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Handle Edit BRC
+app.post("/admin/brc/:id/edit", requireAdmin, uploadBrc.fields([{ name: "coverImage", maxCount: 1 }, { name: "images", maxCount: 20 }]), async (req, res) => {
+  try {
+    const brc = await Brc.findById(req.params.id);
+    if (!brc) return res.redirect("/admin/brc");
+
+    const { name, statement } = req.body;
+
+    // Default to retaining existing files if no new uploads
+    let coverImage = brc.coverImage;
+    let images = brc.images;
+
+    if (req.files) {
+      if (req.files.coverImage && req.files.coverImage.length > 0) {
+        // Optional: Delete old cover image from disk if requested
+        if (coverImage) {
+          const oldPath = path.join(brcUploadDir, coverImage);
+          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+        }
+        coverImage = req.files.coverImage[0].filename;
+      }
+      if (req.files.images && req.files.images.length > 0) {
+        // Append new images to existing array
+        const newImages = req.files.images.map(f => f.filename);
+        images = [...images, ...newImages];
+      }
+    }
+
+    // Process deleted existing images if they sent an array of items to remove
+    if (req.body.removeImages) {
+      let toRemove = Array.isArray(req.body.removeImages) ? req.body.removeImages : [req.body.removeImages];
+      images = images.filter(img => {
+        if (toRemove.includes(img)) {
+          // delete from disk
+          const fp = path.join(brcUploadDir, img);
+          if (fs.existsSync(fp)) fs.unlinkSync(fp);
+          return false;
+        }
+        return true;
+      });
+    }
+
+    brc.name = name;
+    brc.statement = statement;
+    brc.coverImage = coverImage;
+    brc.images = images;
+    // Slug recalculates automatically on save due to pre-save hook in model
+    await brc.save();
+
+    res.redirect("/admin/brc");
+  } catch (err) {
+    console.error("Error updating BRC:", err);
+    res.status(500).send("Error updating BRC.");
+  }
+});
+
+// Delete BRC
+app.post("/admin/brc/:id/delete", requireAdmin, async (req, res) => {
+  try {
+    const brc = await Brc.findById(req.params.id);
+    if (!brc) return res.redirect("/admin/brc");
+
+    // Remove cover image
+    if (brc.coverImage) {
+      const p = path.join(brcUploadDir, brc.coverImage);
+      if (fs.existsSync(p)) fs.unlinkSync(p);
+    }
+
+    // Remove all gallery images
+    if (brc.images && brc.images.length > 0) {
+      brc.images.forEach(img => {
+        const p = path.join(brcUploadDir, img);
+        if (fs.existsSync(p)) fs.unlinkSync(p);
+      });
+    }
+
+    await Brc.findByIdAndDelete(req.params.id);
+    res.redirect("/admin/brc");
+  } catch (e) {
+    console.error("Error deleting BRC:", e);
+    res.status(500).send("Delete failed.");
+  }
+});
+
+
+// --------------------
+// PUBLIC BRC ROUTES
+// --------------------
+
+app.get("/brc", async (req, res) => {
+  try {
+    const brcs = await Brc.find().sort({ name: 1 });
+    res.render("pages/brc", {
+      title: "Barangay Reading Centers",
+      brcs,
+    });
+  } catch (err) {
+    console.error("Error loading BRCs:", err);
+    res.status(500).render("pages/404", { title: "Error" });
+  }
+});
+
+app.get("/brc/:slug", async (req, res) => {
+  try {
+    const brc = await Brc.findOne({ slug: req.params.slug });
+    if (!brc) return res.status(404).render("pages/404", { title: "Not Found" });
+
+    res.render("pages/brc-details", {
+      title: brc.name,
+      brc,
+    });
+  } catch (err) {
+    console.error("Error loading BRC details:", err);
+    res.status(500).render("pages/404", { title: "Error" });
+  }
+});
 
 // --------------------
 // 404 PAGE (KEEP LAST)

@@ -1,49 +1,88 @@
 <section class="page-header">
   <h1>Admin — Inquiries</h1>
-  <p class="muted">Manage messages submitted through “Ask a Librarian”.</p>
+  <p class="muted">Manage messages submitted through "Ask a Librarian".</p>
   <form method="POST" action="/admin/logout" style="margin-top:10px;">
     <a href="/admin/gallery" class="btn">Manage Gallery</a>
-  <button class="btn btn-danger" type="submit">Logout</button>
-</form>
+    <button class="btn btn-danger" type="submit">Logout</button>
+  </form>
 </section>
 
 <div class="card">
-  <% if (!inquiries || inquiries.length === 0) { %>
+  <% if (!inquiries || inquiries.length===0) { %>
     <div class="empty-state">No inquiries yet.</div>
-  <% } else { %>
-    <div class="admin-table">
-      <div class="admin-row admin-head">
-        <div>Name</div>
-        <div>Category</div>
-        <div>Status</div>
-        <div>Date</div>
-        <div>Action</div>
-      </div>
-
-      <% inquiries.forEach(i => { %>
-        <div class="admin-row">
-          <div>
-            <strong><%= i.name %></strong><br />
-            <span class="muted"><%= i.email %></span>
-          </div>
-
-          <div><%= i.category %></div>
-
-          <div>
-            <span class="pill <%= i.status === 'resolved' ? 'pill-ok' : 'pill-new' %>">
-              <%= i.status %>
-            </span>
-          </div>
-
-          <div class="muted">
-            <%= new Date(i.createdAt).toLocaleString() %>
-          </div>
-
-          <div>
-            <a class="btn btn-small" href="/admin/inquiries/<%= i._id %>">View</a>
-          </div>
+    <% } else { %>
+      <div class="admin-table">
+        <div class="admin-row admin-head">
+          <div>Name</div>
+          <div>Category</div>
+          <div>Status</div>
+          <div>Date</div>
+          <div>Action</div>
         </div>
-      <% }) %>
-    </div>
-  <% } %>
+
+        <% inquiries.forEach(i=> { %>
+          <div class="admin-row">
+            <div>
+              <strong>
+                <%= i.name %>
+              </strong><br />
+              <span class="muted">
+                <%= i.email %>
+              </span>
+            </div>
+
+            <div>
+              <%= i.category %>
+            </div>
+
+            <div>
+              <span class="pill <%= i.status === 'resolved' ? 'pill-ok' : 'pill-new' %>">
+                <%= i.status %>
+              </span>
+            </div>
+
+            <div class="muted">
+              <%= new Date(i.createdAt).toLocaleString() %>
+            </div>
+
+            <div>
+              <a class="btn btn-small" href="/admin/inquiries/<%= i._id %>">View</a>
+            </div>
+          </div>
+          <% }) %>
+      </div>
+      <% } %>
 </div>
+
+<!-- Pagination -->
+<% if (totalPages> 1) { %>
+  <nav class="pagination" aria-label="Inquiries pages">
+    <% if (currentPage> 1) { %>
+      <a class="page-btn" href="/admin/inquiries?page=<%= currentPage - 1 %>">&#8592; Prev</a>
+      <% } else { %>
+        <span class="page-btn page-btn--disabled">&#8592; Prev</span>
+        <% } %>
+
+          <div class="page-numbers">
+            <% for (let p=1; p <=totalPages; p++) { %>
+              <% if (p===currentPage) { %>
+                <span class="page-num page-num--active">
+                  <%= p %>
+                </span>
+                <% } else if (p===1 || p===totalPages || (p>= currentPage - 2 && p <= currentPage + 2)) { %>
+                    <a class="page-num" href="/admin/inquiries?page=<%= p %>">
+                      <%= p %>
+                    </a>
+                    <% } else if (p===currentPage - 3 || p===currentPage + 3) { %>
+                      <span class="page-ellipsis">…</span>
+                      <% } %>
+                        <% } %>
+          </div>
+
+          <% if (currentPage < totalPages) { %>
+            <a class="page-btn" href="/admin/inquiries?page=<%= currentPage + 1 %>">Next &#8594;</a>
+            <% } else { %>
+              <span class="page-btn page-btn--disabled">Next &#8594;</span>
+              <% } %>
+  </nav>
+  <% } %>

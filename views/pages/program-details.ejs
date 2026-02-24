@@ -1,31 +1,48 @@
 <section class="program-page">
-  <header class="program-hero">
-    <div class="program-hero-text">
-      <h1><%= program.name %></h1>
-      <p class="muted"><%= program.summary || "Details coming soon." %></p>
 
+  <!-- ── Hero: large image on top, text below ── -->
+  <header class="program-hero">
+
+    <!-- Image (full width) -->
+    <div class="program-hero-media">
+      <div class="program-img-frame">
+        <img class="program-image" src="/assets/images/programs/<%= program.slug %>.jpg" alt="<%= program.name %>"
+          onerror="this.parentElement.innerHTML='<div class=\'img-placeholder\'><span>📚</span><p>No image available yet</p></div>'" />
+        <div class="program-img-overlay">
+          <div class="program-img-title">
+            <span class="program-eyebrow">Library Program</span>
+            <h1>
+              <%= program.name %>
+            </h1>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Text below the image -->
+    <div class="program-hero-text">
+      <p class="program-summary">
+        <%= program.summary || "Details coming soon." %>
+      </p>
       <div class="program-cta-row">
-        <a class="btn btn-primary" href="/contact">Inquire</a>
+        <a class="btn btn-primary" href="/contact">Inquire Now</a>
         <a class="btn" href="/programs">← Back to Programs</a>
       </div>
     </div>
 
-   <div class="program-hero-media">
-  <img
-    class="program-image"
-    src="/assets/images/programs/<%= program.slug %>.jpg"
-    alt="<%= program.name %>"
-    onerror="this.style.display='none'; this.insertAdjacentHTML('afterend','<div class=&quot;img-placeholder&quot;><span>No image yet</span></div>')"
-  />
-</div>
   </header>
 
+  <!-- ── About section ── -->
   <section class="program-section">
-    <h2>About this program</h2>
-  <p>
-  <%= program.description || "Full description coming soon." %>
-</p>
+    <div class="program-section-header">
+      <h2>About this Program</h2>
+      <div class="section-divider"></div>
+    </div>
+    <div class="program-description">
+      <p>
+        <%= program.description || "Full description coming soon." %>
+      </p>
+    </div>
   </section>
 
- 
 </section>

@@ -1,19 +1,104 @@
-/* ===========================
-   NAV TOGGLE (Mobile)
-   =========================== */
-const toggle = document.getElementById("navToggle");
-const links = document.getElementById("navLinks");
+/* =========================================================
+   Urdaneta City Library — main.js
+   ========================================================= */
 
-if (toggle && links) {
-  toggle.addEventListener("click", () => {
-    links.classList.toggle("active");
+/* ── Page-load fade-in ── */
+document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("loaded");
+});
+
+/* ── Navbar: scroll shadow + active link ── */
+const navbar = document.querySelector(".navbar");
+
+if (navbar) {
+  // Scroll shadow
+  window.addEventListener("scroll", () => {
+    navbar.classList.toggle("scrolled", window.scrollY > 10);
+  }, { passive: true });
+
+  // Active link by pathname
+  const path = window.location.pathname;
+  document.querySelectorAll(".nav-links a").forEach(link => {
+    const href = link.getAttribute("href");
+    if (href === path || (href !== "/" && path.startsWith(href))) {
+      link.classList.add("active");
+    }
   });
 }
 
+/* ── Mobile hamburger toggle ── */
+const toggle = document.getElementById("navToggle");
+const navLinks = document.getElementById("navLinks");
 
-/* ===========================
-   POLICIES ACCORDION
-   =========================== */
+if (toggle && navLinks) {
+  toggle.addEventListener("click", () => {
+    const open = navLinks.classList.toggle("open");
+    toggle.setAttribute("aria-expanded", open);
+    toggle.classList.toggle("open", open);
+  });
+
+  // Close on outside click
+  document.addEventListener("click", e => {
+    if (!toggle.contains(e.target) && !navLinks.contains(e.target)) {
+      navLinks.classList.remove("open");
+      toggle.classList.remove("open");
+      toggle.setAttribute("aria-expanded", false);
+    }
+  });
+}
+
+/* ── Scroll-reveal (IntersectionObserver) ── */
+(() => {
+  const els = document.querySelectorAll(".reveal");
+  if (!els.length) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("revealed");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.12 });
+
+  els.forEach(el => observer.observe(el));
+})();
+
+/* ── Staggered children reveal ── */
+(() => {
+  document.querySelectorAll(".reveal-stagger").forEach(parent => {
+    const children = parent.children;
+    Array.from(children).forEach((child, i) => {
+      child.style.setProperty("--stagger-i", i);
+      child.classList.add("reveal");
+    });
+  });
+
+  // Re-run observer after stagger setup
+  const els = document.querySelectorAll(".reveal:not(.revealed)");
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("revealed");
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.10 });
+  els.forEach(el => observer.observe(el));
+})();
+
+/* ── Hero parallax (subtle) ── */
+(() => {
+  const media = document.querySelector(".hero-media");
+  if (!media) return;
+
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY;
+    media.style.transform = `scale(1.06) translateY(${y * 0.12}px)`;
+  }, { passive: true });
+})();
+
+/* ── Policies Accordion ── */
 (() => {
   const root = document.querySelector("#policyAccordion");
   if (!root) return;
@@ -25,13 +110,11 @@ if (toggle && links) {
     const panel = item.querySelector(".accordion-panel");
     const icon = item.querySelector(".accordion-icon");
 
-    // closed by default
     panel.style.maxHeight = "0px";
 
     btn.addEventListener("click", () => {
       const isOpen = item.classList.contains("open");
 
-      // close others
       items.forEach(i => {
         i.classList.remove("open");
         const p = i.querySelector(".accordion-panel");
@@ -49,96 +132,15 @@ if (toggle && links) {
   });
 })();
 
-
-/* ===========================
-   GALLERY LIGHTBOX
-   =========================== */
-document.addEventListener("DOMContentLoaded", () => {
-
-  const lightbox = document.getElementById("lightbox");
-  if (!lightbox) return; // only runs on gallery page
-
-  const lightboxImg = lightbox.querySelector(".lightbox-img");
-  const closeBtn = lightbox.querySelector(".lightbox-close");
-  const images = document.querySelectorAll(".gallery-item img");
-
-  // Open lightbox
-  images.forEach(img => {
-    img.addEventListener("click", () => {
-      lightbox.classList.add("open");
-      lightboxImg.src = img.src;
-      lightboxImg.alt = img.alt || "Gallery Image";
-      document.body.style.overflow = "hidden";
-    });
-  });
-
-  // Close button
-  if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
-      lightbox.classList.remove("open");
-      document.body.style.overflow = "";
-      lightboxImg.src = "";
-    });
-  }
-
-  // Click outside image closes
-  lightbox.addEventListener("click", (e) => {
-    if (e.target === lightbox) {
-      lightbox.classList.remove("open");
-      document.body.style.overflow = "";
-      lightboxImg.src = "";
-    }
-  });
-
-  // ESC key closes
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && lightbox.classList.contains("open")) {
-      lightbox.classList.remove("open");
-      document.body.style.overflow = "";
-      lightboxImg.src = "";
-    }
-  });
-
-});
-
-/* ===========================
-   TRIPLE CLICK ADMIN ACCESS
-   =========================== */
-
-const brand = document.querySelector(".brand");
-
-if (brand) {
-  let clickCount = 0;
-  let clickTimer;
-
-  brand.addEventListener("click", () => {
-    clickCount++;
-
-    if (clickCount === 1) {
-      clickTimer = setTimeout(() => {
-        clickCount = 0;
-      }, 1000); // reset if 3 clicks not completed within 1 sec
-    }
-
-    if (clickCount === 3) {
-      clearTimeout(clickTimer);
-      clickCount = 0;
-      window.location.href = "/admin/login";
-    }
-  });
-}
-
-// --------------------
-// Gallery Lightbox (click to enlarge)
-// --------------------
+/* ── Gallery Lightbox ── */
 (() => {
-  const galleryImages = document.querySelectorAll(".gallery-item img");
   const lightbox = document.getElementById("lightbox");
-  if (!lightbox || galleryImages.length === 0) return;
+  if (!lightbox) return;
 
   const lightboxImg = lightbox.querySelector(".lightbox-img");
   const closeBtn = lightbox.querySelector(".lightbox-close");
   const caption = lightbox.querySelector(".lightbox-caption");
+  const images = document.querySelectorAll(".gallery-item img");
 
   const open = (img) => {
     lightbox.classList.add("open");
@@ -154,14 +156,29 @@ if (brand) {
     document.body.style.overflow = "";
   };
 
-  galleryImages.forEach(img => img.addEventListener("click", () => open(img)));
-  closeBtn.addEventListener("click", close);
+  images.forEach(img => img.addEventListener("click", () => open(img)));
+  if (closeBtn) closeBtn.addEventListener("click", close);
+  lightbox.addEventListener("click", e => { if (e.target === lightbox) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+})();
 
-  lightbox.addEventListener("click", (e) => {
-    if (e.target === lightbox) close();
-  });
+/* ── Triple-click Admin Access ── */
+(() => {
+  const brand = document.querySelector(".brand");
+  if (!brand) return;
 
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") close();
+  let clickCount = 0;
+  let timer;
+
+  brand.addEventListener("click", () => {
+    clickCount++;
+    if (clickCount === 1) {
+      timer = setTimeout(() => { clickCount = 0; }, 1000);
+    }
+    if (clickCount === 3) {
+      clearTimeout(timer);
+      clickCount = 0;
+      window.location.href = "/admin/login";
+    }
   });
 })();
