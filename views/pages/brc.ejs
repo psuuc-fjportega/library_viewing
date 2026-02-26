@@ -17,31 +17,134 @@
     <% if (!brcs || brcs.length===0) { %>
         <p class="muted" style="text-align: center; margin: 40px 0;">No reading centers available at the moment.</p>
         <% } else { %>
-            <div class="programs-grid">
+            <div class="search-container"
+                style="max-width: 600px; margin: 0 auto 40px; position: relative; z-index: 10;">
+                <input type="text" class="live-search"
+                    style="width: 100%; padding: 10px 0; border: none; border-bottom: 2px solid #ddd; background: transparent; font-size: 1.1rem; box-shadow: none; outline: none; transition: border-color 0.3s ease;"
+                    placeholder="Search reading centers..." data-target=".programs-grid .card"
+                    data-no-results="#no-brc-results" onfocus="this.style.borderBottomColor='#333';"
+                    onblur="this.style.borderBottomColor='#ddd';">
+            </div>
+
+            <div id="no-brc-results" class="muted"
+                style="text-align: center; margin: 40px 0; display: none; font-size: 1.1rem;">No reading centers match
+                your search.</div>
+
+            <div class="program-grid">
                 <% brcs.forEach(b=> { %>
-                    <div class="card p-card">
-                        <% if (b.coverImage) { %>
-                            <img class="p-card-img" src="/assets/brc/uploads/<%= b.coverImage %>"
-                                alt="<%= b.name %> Cover" style="width: 100%; height: 220px; object-fit: cover;">
-                            <% } else { %>
-                                <div class="p-card-img"
-                                    style="background-color: #eee; display: flex; align-items: center; justify-content: center; height: 220px; width: 100%;">
-                                    <span class="muted" style="font-size: 0.9rem;">No Image</span>
-                                </div>
-                                <% } %>
-                                    <div class="p-card-content">
-                                        <h2 class="p-card-title">
-                                            <%= b.name %>
-                                        </h2>
-                                        <p class="p-card-desc">
-                                            <%= b.statement.length> 100 ? b.statement.substring(0, 100) + '...' :
-                                                b.statement %>
-                                        </p>
-                                        <a href="/brc/<%= b.slug %>" class="btn btn-primary"
-                                            style="margin-top:auto; align-self:start;">View Details</a>
-                                    </div>
-                    </div>
+                    <button type="button" class="program-tile" data-program="<%= JSON.stringify({
+                        slug: b.slug,
+                        name: b.name,
+                        summary: b.statement.length > 100 ? b.statement.substring(0, 100) + '...' : b.statement,
+                        description: b.statement,
+                        logo: b.coverImage ? ('/assets/brc/uploads/' + b.coverImage) : ''
+                    }) %>" aria-label="View details for <%= b.name %>">
+                        <div class="program-tile-media">
+                            <% if (b.coverImage) { %>
+                                <img src="/assets/brc/uploads/<%= b.coverImage %>" alt="<%= b.name %> Cover"
+                                    onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>🏘️</div>'">
+                                <% } else { %>
+                                    <div class="program-logo-fallback">🏘️</div>
+                                    <% } %>
+                        </div>
+                        <div class="program-tile-body">
+                            <div class="program-tile-title">
+                                <%= b.name %>
+                            </div>
+                            <div class="program-tile-desc">
+                                <%= b.statement.length> 100 ? b.statement.substring(0, 100) + '...' : b.statement %>
+                            </div>
+                        </div>
+                    </button>
                     <% }) %>
             </div>
             <% } %>
 </section>
+
+<!-- MODAL (no navigation) -->
+<div class="program-modal" id="programModal" aria-hidden="true">
+    <div class="program-modal-backdrop" data-close="1"></div>
+
+    <div class="program-modal-card" role="dialog" aria-modal="true" aria-labelledby="programModalTitle">
+        <div class="program-modal-head">
+            <div class="program-modal-head-left">
+                <div class="program-modal-logo" id="programModalLogo">🏘️</div>
+                <div>
+                    <div class="program-modal-eyebrow">Reading Center</div>
+                    <h2 id="programModalTitle" class="program-modal-title"></h2>
+                </div>
+            </div>
+
+            <button class="program-modal-close" type="button" data-close="1" aria-label="Close">✕</button>
+        </div>
+
+        <p class="program-modal-summary" id="programModalSummary"></p>
+
+        <div class="program-modal-section">
+            <h3>About this Center</h3>
+            <p id="programModalDescription"></p>
+        </div>
+
+        <div class="program-modal-actions">
+            <a class="btn btn-primary" id="programModalLink" href="#">View Full Details</a>
+            <button class="btn" type="button" data-close="1">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const modal = document.getElementById("programModal");
+        const titleEl = document.getElementById("programModalTitle");
+        const summaryEl = document.getElementById("programModalSummary");
+        const descEl = document.getElementById("programModalDescription");
+        const logoEl = document.getElementById("programModalLogo");
+        const linkEl = document.getElementById("programModalLink");
+
+        function openModal(program) {
+            titleEl.textContent = program.name || "";
+            summaryEl.textContent = program.summary || "Details coming soon.";
+            descEl.textContent = program.description || "Full description coming soon.";
+            linkEl.href = "/brc/" + program.slug;
+
+            // Render logo image if available
+            const logoUrl = program.logo;
+            if (logoUrl) {
+                logoEl.innerHTML = '<img src="' + logoUrl + '" alt="' + (program.name || "Center") + ' logo" onerror="this.parentElement.textContent=\'🏘️\'"/>';
+            } else {
+                logoEl.textContent = "🏘️";
+            }
+
+            modal.classList.add("is-open");
+            modal.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeModal() {
+            modal.classList.remove("is-open");
+            modal.setAttribute("aria-hidden", "true");
+            document.body.style.overflow = "";
+        }
+
+        // Tile click -> open modal
+        document.querySelectorAll(".program-tile").forEach((btn) => {
+            btn.addEventListener("click", () => {
+                try {
+                    const program = JSON.parse(btn.getAttribute("data-program"));
+                    openModal(program);
+                } catch (e) {
+                    console.error("Failed to parse reading center data", e);
+                }
+            });
+        });
+
+        // Close handlers
+        modal.addEventListener("click", (e) => {
+            if (e.target && e.target.dataset && e.target.dataset.close) closeModal();
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+        });
+    })();
+</script>

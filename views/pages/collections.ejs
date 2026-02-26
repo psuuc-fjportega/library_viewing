@@ -3,42 +3,288 @@
   <p>Explore the various resources available in the library.</p>
 </section>
 
-<section class="grid reveal-stagger">
+<section class="grid reveal-stagger" id="library-collections">
 
-  <div class="card" id="general">
-    <span class="collection-icon">📖</span>
-    <h2>General Collection</h2>
-    <p>Books covering various subjects for public reading and research.</p>
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/children.jpg" alt="Children's Library">
+    </div>
+    <div class="card-content">
+      <h2>Children's Library</h2>
+      <p>Curated storybooks and learning materials designed for young readers.</p>
+    </div>
   </div>
 
-  <div class="card" id="filipiniana">
-    <span class="collection-icon">🇵🇭</span>
-    <h2>Filipiniana</h2>
-    <p>Materials about Philippine history, culture, and literature.</p>
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/fiction.jpg" alt="Fiction Collection">
+    </div>
+    <div class="card-content">
+      <h2>Fiction</h2>
+      <p>Novels, short stories, and literary works for leisure and enrichment.</p>
+    </div>
   </div>
 
-  <div class="card" id="fiction">
-    <span class="collection-icon">✨</span>
-    <h2>Fiction</h2>
-    <p>Novels, short stories, and literary works for leisure reading.</p>
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/filipiniana.jpg" alt="Filipiniana Collection">
+    </div>
+    <div class="card-content">
+      <h2>Filipiniana</h2>
+      <p>Works on Philippine history, culture, society, and literature.</p>
+    </div>
   </div>
 
-  <div class="card" id="children">
-    <span class="collection-icon">🧒</span>
-    <h2>Children's Library</h2>
-    <p>Storybooks and educational materials designed for young readers.</p>
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/gad.jpg" alt="Gender and Development">
+    </div>
+    <div class="card-content">
+      <h2>Gender and Development (GAD)</h2>
+      <p>Resources supporting gender equality, inclusion, and community development.</p>
+    </div>
   </div>
 
-  <div class="card" id="multimedia">
-    <span class="collection-icon">🎬</span>
-    <h2>Multimedia</h2>
-    <p>Audio-visual materials and digital learning resources.</p>
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/general.jpg" alt="General Collection">
+    </div>
+    <div class="card-content">
+      <h2>General Collection</h2>
+      <p>Wide-ranging books and materials for reading, study, and research.</p>
+    </div>
   </div>
 
-  <div class="card" id="electronic">
-    <span class="collection-icon">💻</span>
-    <h2>Electronic Library</h2>
-    <p>Access to computers and digital research facilities.</p>
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/local-history.jpg" alt="Local History">
+    </div>
+    <div class="card-content">
+      <h2>Local History</h2>
+      <p>Documents and references focused on local heritage and community records.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/pwd.jpg" alt="Persons With Disabilities">
+    </div>
+    <div class="card-content">
+      <h2>Persons With Disabilities</h2>
+      <p>Accessible resources and materials promoting inclusive library services.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/periodical.jpg" alt="Periodical Collection">
+    </div>
+    <div class="card-content">
+      <h2>Periodical</h2>
+      <p>Magazines, newspapers, and journals issued on a regular schedule.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/general.jpg" alt="Reference Collection">
+    </div>
+    <div class="card-content">
+      <h2>Reference</h2>
+      <p>Dictionaries, encyclopedias, and guides intended for in-library use.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/technical.jpg" alt="Technical Section">
+    </div>
+    <div class="card-content">
+      <h2>Technical Section</h2>
+      <p>Specialized manuals and technical resources for skills and applied learning.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/tech4ed.jpg" alt="Tech4Ed">
+    </div>
+    <div class="card-content">
+      <h2>Tech4Ed</h2>
+      <p>Digital learning support, ICT resources, and technology-enabled services.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/thesis.jpg" alt="Thesis Collection">
+    </div>
+    <div class="card-content">
+      <h2>Thesis</h2>
+      <p>Academic research papers, studies, and approved theses for reference.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-image">
+      <img src="/assets/images/collections/vertical-files.jpg" alt="Vertical Files">
+    </div>
+    <div class="card-content">
+      <h2>Vertical Files</h2>
+      <p>Clippings, pamphlets, and subject-based files for quick information access.</p>
+    </div>
   </div>
 
 </section>
+
+<style>
+  /* Responsive grid layout */
+  #library-collections.grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+  }
+
+  @media (max-width: 1024px) {
+    #library-collections.grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    #library-collections.grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Card styling */
+  #library-collections .card {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 20px;
+    padding: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #library-collections .card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary-color, #2c3e50);
+  }
+
+  #library-collections .card-image {
+    position: relative;
+    width: 100%;
+    padding-top: 60%;
+    /* 5:3 Aspect Ratio */
+    overflow: hidden;
+    background: #f8f9fa;
+  }
+
+  #library-collections .card-image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+  }
+
+  #library-collections .card:hover .card-image img {
+    transform: scale(1.1);
+  }
+
+  #library-collections .card-content {
+    padding: 20px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  #library-collections h2 {
+    margin: 0 0 10px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.2;
+  }
+
+  #library-collections p {
+    margin: 0;
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  /* Simple reveal stagger animation (works with your reveal-stagger class) */
+  .reveal-stagger .card {
+    opacity: 0;
+    transform: translateY(10px);
+    animation: cardIn 520ms ease forwards;
+  }
+
+  .reveal-stagger .card:nth-child(1) {
+    animation-delay: 0ms;
+  }
+
+  .reveal-stagger .card:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .reveal-stagger .card:nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .reveal-stagger .card:nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .reveal-stagger .card:nth-child(5) {
+    animation-delay: 240ms;
+  }
+
+  .reveal-stagger .card:nth-child(6) {
+    animation-delay: 300ms;
+  }
+
+  .reveal-stagger .card:nth-child(7) {
+    animation-delay: 360ms;
+  }
+
+  .reveal-stagger .card:nth-child(8) {
+    animation-delay: 420ms;
+  }
+
+  .reveal-stagger .card:nth-child(9) {
+    animation-delay: 480ms;
+  }
+
+  .reveal-stagger .card:nth-child(10) {
+    animation-delay: 540ms;
+  }
+
+  .reveal-stagger .card:nth-child(11) {
+    animation-delay: 600ms;
+  }
+
+  .reveal-stagger .card:nth-child(12) {
+    animation-delay: 660ms;
+  }
+
+  .reveal-stagger .card:nth-child(13) {
+    animation-delay: 720ms;
+  }
+
+  @keyframes cardIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

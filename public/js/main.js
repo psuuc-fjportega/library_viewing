@@ -182,3 +182,35 @@ if (toggle && navLinks) {
     }
   });
 })();
+
+/* ── Dynamic Live Search ── */
+(() => {
+  const searchInputs = document.querySelectorAll(".live-search");
+  searchInputs.forEach(input => {
+    input.addEventListener("input", (e) => {
+      const targetSelector = input.getAttribute("data-target");
+      if (!targetSelector) return;
+
+      const items = document.querySelectorAll(targetSelector);
+      const query = e.target.value.toLowerCase().trim();
+      let hasVisible = false;
+
+      const noResultsSelector = input.getAttribute("data-no-results");
+      const noResults = noResultsSelector ? document.querySelector(noResultsSelector) : null;
+
+      items.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(query)) {
+          item.style.display = "";
+          hasVisible = true;
+        } else {
+          item.style.display = "none";
+        }
+      });
+
+      if (noResults) {
+        noResults.style.display = (hasVisible || items.length === 0) ? "none" : "";
+      }
+    });
+  });
+})();

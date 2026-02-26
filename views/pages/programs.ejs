@@ -1,25 +1,148 @@
-<%
-  const pageData = typeof data !== "undefined" ? data : {};
-  const hero = pageData.hero || {};
-  const list = Array.isArray(pageData.list) ? pageData.list : [];
-%>
+<% const pageData=typeof data !=="undefined" ? data : {}; const hero=pageData.hero || {}; const
+  list=Array.isArray(pageData.list) ? pageData.list : []; %>
 
-<section class="page-header">
-  <h1><%= hero.title || "Library Program" %></h1>
-  <p class="muted"><%= hero.subtitle || "Browse library programs." %></p>
-</section>
+  <section class="page-header">
+    <h1>
+      <%= hero.title || "Library Program" %>
+    </h1>
+    <p class="muted">
+      <%= hero.subtitle || "Browse library programs." %>
+    </p>
+  </section>
 
-<div class="card" style="padding:0;">
-  <div class="program-list">
-    <% if (list.length === 0) { %>
-      <div class="empty-state" style="margin:18px;">No programs listed yet.</div>
-    <% } else { %>
-      <% list.forEach((p) => { %>
-        <a class="program-item" href="/programs/<%= p.slug %>">
-          <span class="program-name"><%= p.name %></span>
-          <span class="program-arrow">→</span>
-        </a>
-      <% }) %>
-    <% } %>
+  <div class="card" style="padding:18px;">
+    <% if (list.length> 0) { %>
+      <div class="search-container"
+        style="padding: 10px 10px 20px; border-bottom: 1px solid #eee; margin-bottom: 20px;">
+        <input type="text" class="live-search"
+          style="width: 100%; padding: 10px 0; border: none; border-bottom: 2px solid #ddd; background: transparent; font-size: 1.05rem; box-shadow: none; outline: none; transition: border-color 0.3s ease;"
+          placeholder="Search programs..." data-target=".program-grid .program-tile"
+          data-no-results="#no-program-results" onfocus="this.style.borderBottomColor='#333';"
+          onblur="this.style.borderBottomColor='#ddd';">
+      </div>
+      <% } %>
+
+        <div id="no-program-results" class="muted" style="text-align: center; padding: 30px 18px; display: none;">No
+          programs match your search.</div>
+
+        <% if (list.length===0) { %>
+          <div class="empty-state">No programs listed yet.</div>
+          <% } else { %>
+
+            <!-- GRID -->
+            <div class="program-grid">
+              <% list.forEach((p, idx)=> { %>
+                <button type="button" class="program-tile" data-program="<%= JSON.stringify({
+            slug: p.slug,
+            name: p.name,
+            summary: p.summary || '',
+            description: p.description || '',
+            logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg')
+          }) %>" aria-label="View details for <%= p.name %>">
+                  <div class="program-tile-media">
+                    <img src="<%= p.logo ? p.logo : (" /assets/images/programs/" + p.slug + ".jpg" ) %>"
+                    alt="<%= p.name %> logo"
+                      onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
+                      />
+                  </div>
+
+                  <div class="program-tile-body">
+                    <div class="program-tile-title">
+                      <%= p.name %>
+                    </div>
+                    <div class="program-tile-desc">
+                      <%= p.summary || p.description || "Details coming soon." %>
+                    </div>
+                  </div>
+                </button>
+                <% }) %>
+            </div>
+
+            <% } %>
   </div>
-</div>
+
+  <!-- MODAL (no navigation) -->
+  <div class="program-modal" id="programModal" aria-hidden="true">
+    <div class="program-modal-backdrop" data-close="1"></div>
+
+    <div class="program-modal-card" role="dialog" aria-modal="true" aria-labelledby="programModalTitle">
+      <div class="program-modal-head">
+        <div class="program-modal-head-left">
+          <div class="program-modal-logo" id="programModalLogo">📚</div>
+          <div>
+            <div class="program-modal-eyebrow">Library Program</div>
+            <h2 id="programModalTitle" class="program-modal-title"></h2>
+          </div>
+        </div>
+
+        <button class="program-modal-close" type="button" data-close="1" aria-label="Close">✕</button>
+      </div>
+
+      <p class="program-modal-summary" id="programModalSummary"></p>
+
+      <div class="program-modal-section">
+        <h3>About this Program</h3>
+        <p id="programModalDescription"></p>
+      </div>
+
+      <div class="program-modal-actions">
+        <a class="btn btn-primary" href="/contact">Inquire Now</a>
+        <button class="btn" type="button" data-close="1">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const modal = document.getElementById("programModal");
+      const titleEl = document.getElementById("programModalTitle");
+      const summaryEl = document.getElementById("programModalSummary");
+      const descEl = document.getElementById("programModalDescription");
+      const logoEl = document.getElementById("programModalLogo");
+
+      function openModal(program) {
+        titleEl.textContent = program.name || "";
+        summaryEl.textContent = program.summary || "Details coming soon.";
+        descEl.textContent = program.description || "Full description coming soon.";
+
+        // Render logo image if available
+        const logoUrl = program.logo;
+        if (logoUrl) {
+          logoEl.innerHTML = '<img src="' + logoUrl + '" alt="' + (program.name || "Program") + ' logo" onerror="this.parentElement.textContent=\'📚\'"/>';
+        } else {
+          logoEl.textContent = "📚";
+        }
+
+        modal.classList.add("is-open");
+        modal.setAttribute("aria-hidden", "false");
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeModal() {
+        modal.classList.remove("is-open");
+        modal.setAttribute("aria-hidden", "true");
+        document.body.style.overflow = "";
+      }
+
+      // Tile click -> open modal
+      document.querySelectorAll(".program-tile").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          try {
+            const program = JSON.parse(btn.getAttribute("data-program"));
+            openModal(program);
+          } catch (e) {
+            console.error("Failed to parse program data", e);
+          }
+        });
+      });
+
+      // Close handlers
+      modal.addEventListener("click", (e) => {
+        if (e.target && e.target.dataset && e.target.dataset.close) closeModal();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+      });
+    })();
+  </script>

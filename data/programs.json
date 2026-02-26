@@ -7,7 +7,12 @@
     {
       "name": "Current Awareness",
       "slug": "current-awareness",
-      "summary": "Updates on new information resources, announcements, and awareness activities."
+      "summary": "Updates on new information resources, announcements, and awareness activities.",
+      "description": [
+        "Current Awareness is a service of the Urdaneta City Library that keeps patrons informed about the latest books, resources, programs, and relevant updates.",
+        "It helps the community stay up to date with new information, trends, and library activities to support learning and research.",
+        "Its main goal is to provide timely and relevant information to the community to support their learning and research needs."
+      ]
     },
     {
       "name": "Reading Challenge",
@@ -20,35 +25,33 @@
         "The initiative highlights the city's commitment to literacy and education, ensuring that young minds have access to meaningful learning experiences.",
         "Organizers expressed their gratitude to participants and supporters who helped make the program a resounding success.",
         "With the positive reception from children and parents alike, the Reading Challenge Program stands as a testament to the power of books in shaping young futures."
-      
-      ] },
+      ]
+    },
     {
       "name": "E - TV",
       "slug": "e-tv",
       "summary": "Educational viewing sessions and media-based learning activities.",
-      "description":[
+      "description": [
         "E-TV is an engaging and informative program that delivers educational content through video presentations, discussions, and interactive segments.",
         "It aims to inform, inspire, and entertain viewers by covering topics such as learning features, community updates, skills development, and relevant issues in an accessible and easy-to-understand format."
       ]
     },
-
     {
       "name": "Aldaw Ti Panagbasa",
       "slug": "aldaw-ti-panagbasa",
       "summary": "A community reading day that promotes reading culture and participation.",
-      "description":[
+      "description": [
         "Continues to Inspire Local Storytelling. Every first and second week of the month, the Urdaneta City Library shares engaging stories on its Facebook page. ",
         "This initiative encourages the community to create Ilocano stories using Bloom software, a tool designed for easy book creation and translation into multiple languages.",
         "For this month’s feature, Aldaw ti Panagbasa (BLOOM) proudly presents 'Ubing nga Bassit' written by Rachelle C. Agustin and narrated by Elaiza Gangat, a dedicated staff member of the Urdaneta City Library.",
         "The story was shared across all UCL social media platforms on November 28, 2024, and has already garnered 148 online views."
       ]
     },
-
     {
       "name": "Story Telling",
       "slug": "story-telling",
       "summary": "Storytelling sessions to build imagination, listening skills, and love for books.",
-      "description":[
+      "description": [
         "Story Telling is a creative and engaging activity that brings stories to life through expressive reading, voice modulation, and imagination. ",
         "It encourages children and listeners to develop language skills, creativity, and a love for reading while enjoying meaningful lessons and adventures shared in a fun and interactive way."
       ]
@@ -57,7 +60,7 @@
       "name": "Intayo Sukisuken",
       "slug": "intayo-sukisuken",
       "summary": "A program that encourages curiosity, exploration, and learning through reading.",
-      "description":[
+      "description": [
         "Urdaneta, known as 'Urdaneta the Bountiful' is a land of opportunities, offering agricultural abundance, industrial growth, commercial advantages, educational benefits, and job opportunities.",
         "The people of Urdaneta take great pride in their wisdom to build and sustain their town, reaping the rewards of their hard work and celebrating with gratitude. This festive occasion also highlights Urdaneta Beauties.",
         "November 13, 2024, the Urdaneta City Library (UCL) Intayo Sukisukken featured Urdaneta Town Fiesta 1994, “Naranngay nga Urdaneta.” as the city celebrating this year’s theme that reflects the accomplishments and, ongoing aspirations, and future rewards. "
@@ -68,19 +71,18 @@
       "slug": "a-law-a-day",
       "summary": "Daily learning bites on laws, rights, and basic legal awareness.",
       "description": [
-            "The Urdaneta City Library (UCL) social media accounts featured Resolution No. 412, Series of 2022-25, entitled “Strengthening and Localizing the Health Promotion Framework through the",
-            "Designation of Barangay Health Workers (BHWs) as On-the-Ground Health Education Promotion Officers (HEPOs) for the Implementation of the",
-            "Universal Health Care: Province-Wide Health System in Pangasinan. The post garnered 712 online participants, with three shares and 17 likes— the resolution",
-            "was retrieved from the Sangguniang Panlungsod resolution and submitted to Ms. Cristina Marie Tacad and Ms. Delilah C. Samson, Program Coordinator,",
-            "reinforcing community-based health education and advocacy under the Universal Health Care system in the province."
-
+        "The Urdaneta City Library (UCL) social media accounts featured Resolution No. 412, Series of 2022-25, entitled “Strengthening and Localizing the Health Promotion Framework through the",
+        "Designation of Barangay Health Workers (BHWs) as On-the-Ground Health Education Promotion Officers (HEPOs) for the Implementation of the",
+        "Universal Health Care: Province-Wide Health System in Pangasinan. The post garnered 712 online participants, with three shares and 17 likes— the resolution",
+        "was retrieved from the Sangguniang Panlungsod resolution and submitted to Ms. Cristina Marie Tacad and Ms. Delilah C. Samson, Program Coordinator,",
+        "reinforcing community-based health education and advocacy under the Universal Health Care system in the province."
       ]
     },
     {
       "name": "Tracing Back History",
       "slug": "tracing-back-history",
       "summary": "Local history and heritage features to understand the city’s roots.",
-      "description":[
+      "description": [
         "Tracing Back History is an informative and enriching activity that explores significant events, cultural heritage, and important milestones from the past. It encourages participants to understand historical roots, appreciate traditions",
         "and recognize how history shapes the present and future. Through discussions, presentations, and storytelling, this program fosters awareness, critical thinking, and a deeper connection to our shared heritage"
       ]
@@ -89,7 +91,7 @@
       "name": "Reader's Advisory",
       "slug": "readers-advisory",
       "summary": "Get book recommendations based on your interests and reading level.",
-      "description":[
+      "description": [
         "Reader’s Advisory is a personalized library service that helps readers discover books and materials that match their interests, preferences, and reading goals. Through friendly recommendations and guided suggestions,",
         "it connects individuals with titles across various genres, authors, and formats—making reading more enjoyable, meaningful, and engaging."
       ]
@@ -98,7 +100,7 @@
       "name": "Bloom",
       "slug": "bloom",
       "summary": "A growth-focused reading and learning program for personal development.",
-      "description":[
+      "description": [
         "Bloom is a growth-focused reading and learning program designed to inspire personal development and lifelong learning. Through curated books, guided discussions, and reflective activities, participants explore topics such as",
         "self-improvement, leadership, mindset, and well-being. The program encourages continuous growth, critical thinking, and positive transformation—helping individuals thrive both personally and professionally."
       ]
@@ -107,7 +109,7 @@
       "name": "Book Drive",
       "slug": "book-drive",
       "summary": "Donate books to help expand access to reading materials in the community.",
-      "description":[
+      "description": [
         "The Urdaneta City Library (UCL), through its dedicated onsite program 'IDATON', successfully organized a Book Drive to provide essential reading materials to book enthusiasts and young learners.",
         "The event, held on November 23, 2024, at Lazaga Elementary School and the UCL as the recipient, was made possible through the generous support of the Rotary Club of Makati",
         "and Alumni Batch '92 of the National High School of Urdaneta City with a total of 35 participants—10 males and 25 females—the Book Drive aimed to enhance the literacy and comprehension skills among the community.",
@@ -122,7 +124,7 @@
       "name": "I want to be techy / Let's explore the web",
       "slug": "lets-explore-the-web",
       "summary": "Beginner-friendly web and computer basics for learners of all ages.",
-      "description":[
+      "description": [
         "In partnership with the Pinmaludpod Barangay Council and the Tech4Ed Center, the Urdaneta City Library successfully conducted the “I Want To Be Techy and Let’s Explore The Web” training program to equip community members with essential computer skills.",
         "Participants included Barangay Health Workers (BHWs), Barangay Nutrition Scholars (BNS), and farmers, eager to enhance their digital literacy. The event was made possible through the support of Barangay",
         "Captain Mark Joseph Andrada, who delivered a heartfelt welcome address after an opening prayer. The program featured an inspirational message from Ms. Bernadine M. Gravela (City Librarian) and Barangay Kagawad Sonny F. Porquillano, followed by an energizing activity led by the library staff."
@@ -132,7 +134,7 @@
       "name": "PWD Home Visitation",
       "slug": "pwd-home-visitation",
       "summary": "Outreach visits to promote reading and library services in homes/community of PWD's.",
-      "description":[
+      "description": [
         "On February 13, 2025, the Urdaneta City Library (UCL) conducted a PWD Home Visitation in Barangay Cabaruan, Urdaneta City, Pangasinan, as part of its initiative to promote inclusivity and ensure equal access to information for persons with disabilities. ",
         "The program aimed to introduce good books and provide library access to Mr. Fernando Tabilin Jr., a 15-year-old child with Down Syndrome. The visitation was facilitated by UCL staff members Diana Dulay, Sonny Reyes, Melanie Tabayoyong, and Ms. Aiza Ramirez (BRC Cabaruan In-Charge).",
         "Prior to the visit, they prepared a formal letter to inform the Barangay Captain about the initiative and secured parental consent to meet and assist the beneficiary.",
@@ -144,18 +146,17 @@
       "name": "Because We Care",
       "slug": "because-we-care",
       "summary": "Community support initiative through learning resources and library services.",
-      "description":[
+      "description": [
         "The Urdaneta City Library has embarked on a comprehensive online research initiative designed to support individuals impacted by cancer—this includes not only those currently undergoing treatment but also those living with the illness and survivors.",
         "In the context of Philippine law, these individuals are acknowledged as Persons with Disabilities (PWDs). This initiative seeks to gain a deeper understanding of the unique challenges and needs faced by this community.",
         "By collecting valuable insights, the library aims to enhance its offerings and provide more inclusive and tailored services. This effort embodies the library’s strong commitment to ensuring equal access to vital information, compassionate care, and robust community support for all individuals, regardless of their circumstances."
-
       ]
     },
     {
       "name": "Library Orientation",
       "slug": "library-orientation",
       "summary": "Guided orientation on how to use library resources and services.",
-      "description":[
+      "description": [
         "The program aimed to familiarize attendees with the library’s services, programs, and operational structure.",
         "The session was led by Ms. Mari Jane Andaya, Interim Assistant Head of the City Library, who provided an overview of the library’s role in the community. Ms. Princess Dee, the Program Coordinator, followed with a discussion on the different areas and ",
         "programs offered by the library, ensuring that the new team members and immersion students understood their responsibilities and the library’s objectives. To conclude the orientation, Ms. Melanie Tabayoyong presented insights on Family ",
@@ -167,7 +168,7 @@
       "name": "Tech4Ed",
       "slug": "tech4ed",
       "summary": "Digital literacy training: computer basics, online safety, and productivity tools.",
-      "description":[
+      "description": [
         "Tech4Ed is a digital literacy training program designed to equip participants with essential technology skills for today’s digital world. The program covers computer basics, internet navigation, online safety, and the",
         "effective use of productivity tools. Through hands-on learning and guided instruction, Tech4Ed empowers individuals to become confident, responsible, and capable digital users.",
         "Tech4Ed Center is open tot everyone. Individuals who are willing to learn about the basic use of computer on the fast change in technology. But our priority is the children, because we don't want them to be left behind by",
@@ -178,7 +179,7 @@
       "name": "Barangay Reading Center",
       "slug": "barangay-reading-center",
       "summary": "Reading hubs in barangays to bring books closer to learners.",
-      "description":[
+      "description": [
         "The Barangay Reading Center is a community-based learning space that promotes literacy, education, and a love for reading among residents of all ages. It provides access to books, learning materials, and reading",
         "programs in a welcoming and supportive environment. The center serves as a hub for knowledge-sharing, storytelling activities, and educational initiatives that strengthen community engagement and lifelong learning."
       ]
@@ -187,7 +188,7 @@
       "name": "Barangay Pangserbisyo",
       "slug": "barangay-pangserbisyo",
       "summary": "Community service support activities and informational assistance.",
-      "description":[
+      "description": [
         "Barangay Pangserbisyo is a community-focused initiative that provides support activities and informational assistance to residents. It aims to make essential services more accessible by offering guidance, referrals, and updates on",
         "various programs and public services. Through this initiative, the barangay strengthens community engagement, promotes awareness, and ensures that residents receive timely and reliable assistance."
       ]
@@ -199,14 +200,13 @@
       "description": [
         "Aklatan sa Parke is a community reading session held in a park setting, creating a fun and relaxing environment for learning and storytelling. This outdoor activity encourages children and families to enjoy",
         "books while connecting with nature. It promotes literacy, creativity, and community engagement in an open and welcoming space."
-        
       ]
     },
     {
       "name": "Ang Kalusugan Ay Kayamanan",
       "slug": "health-is-wealth",
       "summary": "Health awareness/guidelines for the community.",
-      "description":[
+      "description": [
         "Focused on quitting smoking and its long-term health benefits. The event garnered positive engagement, with 22 likes, 4 shares, and 179 views.",
         "The Urdaneta City Library (UCL) continues its mission to promote health and well-being through its monthly program, which is themed 'Ang Kalusugan Ay Kayamanan' (Health is Wealth).",
         "The Power of Quitting Smoking through informative infographics and expert insights, UCL emphasized that while quitting earlier provides more significant benefits, it is never too late to stop smoking",
@@ -218,7 +218,7 @@
       "name": "Building A Better Vocabulary",
       "slug": "building-a-vocabulary",
       "summary": "Urdaneta City Library Introduces New Word to Enhance Online Vocabulary",
-      "description":[
+      "description": [
         "Building a Better Vocabulary is an initiative by the Urdaneta City Library that introduces a new word regularly to help enhance online vocabulary and language skills. Through engaging posts and easy-to-understand",
         "definitions, the program encourages continuous learning, improved communication, and a stronger command of words for readers of all ages."
       ]
@@ -227,7 +227,7 @@
       "name": "Children's/Teen's Bookclub",
       "slug": "bookclub",
       "summary": "A Bookclub created specifically for Children and Teenagers",
-      "description":[
+      "description": [
         "Urdaneta City Library has a children's book club as one of its monthly programs. It's important to foster a love of reading in children and encourage them to explore books and other printed materials. ",
         " It's wonderful that the program started with a prayer and background music to make it more engaging for the kids. It's also great that Ma'am Bernadine M. Gravela took time to explain both the children and parents the objectives and purpose of the children's book club.",
         "I hope the program continues to be successful in promoting literacy and a love for reading in the younger generation. September 02, 2023 at 4:00 PM at UCL for a new agenda for October, 2023."
@@ -237,7 +237,7 @@
       "name": "Community Space",
       "slug": "community-space",
       "summary": "A safespace created for the community.",
-      "description":[
+      "description": [
         "The Urdaneta City Library continues to serve as a hub for community engagement through its Community Space Program, hosting various activities to support residents. On February 7, 14, and 21, 2025,",
         "a wedding counseling session was held to discuss the significance of marriage. Facilitated by Ms. Maria Elena Del Prado, the session welcomed 38 couples (19 males and 19 females), providing guidance on ",
         "building strong and lasting relationships. On February 20, 2025, a job hiring event was organized with Phil. Assistlife Manpower Corporation (PAMC), which presented various job opportunities in Japan.",
@@ -250,7 +250,7 @@
       "name": "E-Gov Services",
       "slug": "e-gov-services",
       "summary": "A service related to E-Gov",
-      "description":[
+      "description": [
         "Through online platforms and assisted digital support, residents can process applications, request documents, access information, and complete transactions more efficiently. ",
         "The Urdaneta City Library aims to provide assistance to our community and even to nearby towns in need of government documents.",
         "This initiative promotes transparency, efficiency, and inclusive access to essential government services."
@@ -260,7 +260,7 @@
       "name": "Gabay Sa Mamamayan",
       "slug": "gabay-sa-mamamayan",
       "summary": "Community support that consists of addressing community concerns and helping them get through it.",
-      "description":[
+      "description": [
         "Gabay sa Mamamayan is a community support initiative dedicated to addressing residents’ concerns and guiding them toward appropriate solutions and services. The program provides assistance, information, and referrals to help",
         "individuals navigate challenges and access available resources. Through compassionate support and active engagement, Gabay sa Mamamayan promotes empowerment, awareness, and a stronger, more connected community."
       ]
@@ -269,16 +269,15 @@
       "name": "House and Garden Tips",
       "slug": "house-and-garden-tips",
       "summary": "A type of learning that gives the community tips and tricks all around the garden and inside the house.",
-      "description":[
+      "description": [
         "Discover practical and easy-to-follow house and garden tips to keep your home organized and your outdoor space thriving. From smart cleaning hacks and space-saving ideas to plant care, landscaping basics, and seasonal gardening advice, these tips help create a comfortable, beautiful, and well-maintained living environment for you and your family"
-        
       ]
     },
     {
       "name": "Idaton",
       "slug": "idaton",
       "summary": "Giving the gift of Knowledge Through Book Donations. ",
-      "description":[
+      "description": [
         "The Urdaneta City Library (UCL) Program, known as IDATON, is dedicated to distributing and donating books to book enthusiasts.",
         "Through this initiative, the library aims to provide the community with valuable reading materials as part of its advocacy to promote literacy.",
         "This program ensures access to books suitable for all ages, helping individuals improve their reading and comprehension skills—essential for both personal and professional growth.",
@@ -286,34 +285,31 @@
         "Every book donation is a step towards empowering minds and shaping a more informed and educated society."
       ]
     },
-    
     {
       "name": "Istoryahan Sa Parke",
       "slug": "istoryahan-sa-parke",
       "summary": "A session that is about storytelling often done at the park.",
-      "description":[
+      "description": [
         "Children from different grade levels actively participated, engaging in meaningful discussions about the stories and reinforcing the importance of literature in their daily lives. ",
         "Through Istoryahan sa Parke, the Urdaneta City Library continues to promote literacy in a fun and engaging way, encouraging children to explore the magic of books and storytelling. ",
         "To enhance the experience, snacks are provided, bringing smiles and joy to all who will join. "
       ]
     },
-
     {
       "name": "Let's Go Techy Tips",
       "slug": "lets-go-techy-tips",
       "summary": "Tips and tricks that is all about the technicalities of the computer.",
-      "description":[
+      "description": [
         "In February 2025, the Urdaneta City Library released a new video under its Let’s Go Techy program titled “Add Windows 10 Lock Screen Pictures to Your Wallpaper Collection.” The video aims to help viewers expand their knowledge about basic computer functions and customization.",
         "The video was posted on the library’s official social media account, where it gained positive engagement—reaching 1,651 views and receiving 84 likes.",
         "This initiative is part of the library’s ongoing efforts to promote digital literacy and make technology more accessible to the community. "
       ]
-      
     },
     {
       "name": "Library Passport",
       "slug": "library-passport",
       "summary": "Library passporting process.",
-      "description":[
+      "description": [
         "On February 18, 2025, the Library Passport Program was conducted for Labit West Daycare Center students to introduce them to the world of books and library services.",
         "The initiative aimed to provide young learners easy access to various library programs while fostering their interest in reading, learning, and exploring library resources. ",
         "The Library Passport Program encouraged students to explore library services and activities like book lending, storytelling sessions, and educational workshops.",
@@ -326,7 +322,7 @@
       "name": "Online Resources",
       "slug": "online-resources",
       "summary": "All about the resources online.",
-      "description":[
+      "description": [
         "In November 2024, a video showcasing 'Let's Read Asia' was shared on social media platforms of the Urdaneta City Library (UCL) Online Resources program. ",
         "This initiative, which is shared on UCL's social media accounts every first week of the month, aspires to give everyone free online access to readable and",
         "downloadable books and offers one of the best online collections of classic literature for children and the young at heart."
@@ -336,7 +332,7 @@
       "name": "Online/Virtual Storytelling",
       "slug": "online-virtual-storytelling",
       "summary": "A kind of storytelling that is done virtually, recorded or live.",
-      "description":[
+      "description": [
         "The Urdaneta City Library continues to bring the magic of storytelling to children through its monthly Virtual Storytelling Program. Shared across multiple digital platforms such as Facebook, TikTok, YouTube, Instagram (IG), and the official ",
         "Urdaneta City Library page, this initiative encourages young audiences to engage with literature in an entertaining and accessible way.",
         "For February, the featured story was “When Juan Tamad Fell in Love,” a charming retelling by Aina Enriquez, read by Jericho Cy V. Caoile, a Work Immersion student (HUMSS) from Urdaneta City National High School. With its engaging narration and ",
@@ -348,16 +344,15 @@
       "name": "Virtual Reference Services",
       "slug": "virtual-reference-services",
       "summary": "real-time or asynchronously, expert information assistance from librarians through digital channels",
-      "description":[
+      "description": [
         "Its goal is to provide online assistance by responding and answering online queries. Most often time, “FAQ” or frequently asked questions are requirement that clients needs to provide in order to apply on an specific document."
       ]
     },
-
-     {
+    {
       "name": "Pre-Marriage Counseling",
       "slug": "pre-marriage-counseling",
       "summary": "Offers weekly counseling of pre-marriage couples.",
-      "description":[
+      "description": [
         "Pre-Marriage Counseling at the Urdaneta City Library is a meaningful session designed to help couples prepare for a strong and lasting marriage. The program covers essential topics such as communication, financial planning, conflict resolution, family life, and shared values.",
         "Conducted in a supportive and informative environment, it aims to equip soon-to-be-married couples with practical guidance and deeper understanding as they begin their journey together."
       ]
