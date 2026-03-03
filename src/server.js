@@ -13,6 +13,33 @@ const session = require("express-session");
 const Inquiry = require("./models/Inquiry");
 const Brc = require("./models/Brc"); // BRC Model
 
+const cloudinary = require("cloudinary").v2;
+
+// Cloudinary config (Render env vars)
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Upload helper (buffer -> cloudinary)
+function uploadBufferToCloudinary(buffer, folder) {
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder,
+        resource_type: "image",
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result); // { secure_url, public_id, ... }
+      }
+    );
+
+    stream.end(buffer);
+  });
+}
+
 const app = express();
 
 // --------------------
@@ -76,9 +103,9 @@ const brcStorage = multer.diskStorage({
 });
 
 const uploadBrc = multer({
-  storage: brcStorage,
+  storage: multer.memoryStorage(), // ✅ keep in RAM, then upload to Cloudinary
   fileFilter,
-  limits: { fileSize: 15 * 1024 * 1024 }
+  limits: { fileSize: 15 * 1024 * 1024 },
 });
 
 
@@ -474,101 +501,140 @@ app.get("/admin/brc/new", requireAdmin, (req, res) => {
 });
 
 // Handle Add New BRC
-app.post("/admin/brc", requireAdmin, uploadBrc.fields([{ name: "coverImage", maxCount: 1 }, { name: "images", maxCount: 20 }]), async (req, res) => {
-  try {
-    const { name, statement } = req.body;
-    let coverImage = "";
-    let images = [];
+app.post(
+  "/admin/brc",
+  requireAdmin,
+  uploadBrc.fields([
+    { name: "coverImage", maxCount: 1 },
+    { name: "images", maxCount: 20 },
+  ]),
+  async (req, res) => {
+    try {
+      const { name, statement } = req.body;
 
-    if (req.files) {
-      if (req.files.coverImage && req.files.coverImage.length > 0) {
-        coverImage = req.files.coverImage[0].filename;
+      let coverUrl = "";
+      let coverPublicId = "";
+      let imageUrls = [];
+      let imagePublicIds = [];
+
+      // Cover upload
+      if (req.files?.coverImage?.[0]) {
+        const r = await uploadBufferToCloudinary(
+          req.files.coverImage[0].buffer,
+          "ucpl/brc/covers"
+        );
+        coverUrl = r.secure_url;
+        coverPublicId = r.public_id;
       }
-      if (req.files.images && req.files.images.length > 0) {
-        images = req.files.images.map(f => f.filename);
+
+      // Gallery images upload
+      if (req.files?.images?.length) {
+        for (const f of req.files.images) {
+          const r = await uploadBufferToCloudinary(f.buffer, "ucpl/brc/images");
+          imageUrls.push(r.secure_url);
+          imagePublicIds.push(r.public_id);
+        }
       }
+
+      await Brc.create({
+        name,
+        statement,
+
+        // ✅ Cloudinary fields
+        coverUrl,
+        coverPublicId,
+        imageUrls,
+        imagePublicIds,
+
+        // (optional) keep old fields empty
+        coverImage: "",
+        images: [],
+      });
+
+      return res.redirect("/admin/brc");
+    } catch (err) {
+      console.error("Error adding BRC:", err);
+      return res.status(500).send("Error adding BRC. Please try again.");
     }
-
-    await Brc.create({ name, statement, coverImage, images });
-    res.redirect("/admin/brc");
-  } catch (err) {
-    console.error("Error adding BRC:", err);
-    res.status(500).send("Error adding BRC. Please try again.");
   }
-});
-
-// Edit BRC Form
-app.get("/admin/brc/:id/edit", requireAdmin, async (req, res) => {
-  try {
-    const brc = await Brc.findById(req.params.id);
-    if (!brc) return res.status(404).render("pages/404", { title: "Not Found" });
-
-    res.render("pages/admin-brc-form", {
-      title: "Admin — Edit BRC",
-      layout: "layouts/admin",
-      brc,
-    });
-  } catch (err) {
-    console.error("Error fetching BRC:", err);
-    res.status(500).send("Server Error");
-  }
-});
+);
 
 // Handle Edit BRC
-app.post("/admin/brc/:id/edit", requireAdmin, uploadBrc.fields([{ name: "coverImage", maxCount: 1 }, { name: "images", maxCount: 20 }]), async (req, res) => {
-  try {
-    const brc = await Brc.findById(req.params.id);
-    if (!brc) return res.redirect("/admin/brc");
+app.post(
+  "/admin/brc/:id/edit",
+  requireAdmin,
+  uploadBrc.fields([
+    { name: "coverImage", maxCount: 1 },
+    { name: "images", maxCount: 20 },
+  ]),
+  async (req, res) => {
+    try {
+      const brc = await Brc.findById(req.params.id);
+      if (!brc) return res.redirect("/admin/brc");
 
-    const { name, statement } = req.body;
+      const { name, statement } = req.body;
 
-    // Default to retaining existing files if no new uploads
-    let coverImage = brc.coverImage;
-    let images = brc.images;
+      // Update text fields
+      brc.name = name;
+      brc.statement = statement;
 
-    if (req.files) {
-      if (req.files.coverImage && req.files.coverImage.length > 0) {
-        // Optional: Delete old cover image from disk if requested
-        if (coverImage) {
-          const oldPath = path.join(brcUploadDir, coverImage);
-          if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
+      // Replace cover image (if new uploaded)
+      if (req.files?.coverImage?.[0]) {
+        // delete old cover from Cloudinary
+        if (brc.coverPublicId) {
+          await cloudinary.uploader.destroy(brc.coverPublicId).catch(() => {});
         }
-        coverImage = req.files.coverImage[0].filename;
-      }
-      if (req.files.images && req.files.images.length > 0) {
-        // Append new images to existing array
-        const newImages = req.files.images.map(f => f.filename);
-        images = [...images, ...newImages];
-      }
-    }
 
-    // Process deleted existing images if they sent an array of items to remove
-    if (req.body.removeImages) {
-      let toRemove = Array.isArray(req.body.removeImages) ? req.body.removeImages : [req.body.removeImages];
-      images = images.filter(img => {
-        if (toRemove.includes(img)) {
-          // delete from disk
-          const fp = path.join(brcUploadDir, img);
-          if (fs.existsSync(fp)) fs.unlinkSync(fp);
-          return false;
+        const r = await uploadBufferToCloudinary(
+          req.files.coverImage[0].buffer,
+          "ucpl/brc/covers"
+        );
+        brc.coverUrl = r.secure_url;
+        brc.coverPublicId = r.public_id;
+      }
+
+      // Add new gallery images (append)
+      if (req.files?.images?.length) {
+        for (const f of req.files.images) {
+          const r = await uploadBufferToCloudinary(f.buffer, "ucpl/brc/images");
+          brc.imageUrls.push(r.secure_url);
+          brc.imagePublicIds.push(r.public_id);
         }
-        return true;
-      });
+      }
+
+      // Remove selected images (if your form sends removeImages indexes or publicIds)
+      // BEST PRACTICE: send publicIds to remove
+      if (req.body.removePublicIds) {
+        const toRemove = Array.isArray(req.body.removePublicIds)
+          ? req.body.removePublicIds
+          : [req.body.removePublicIds];
+
+        // delete from cloudinary
+        for (const pid of toRemove) {
+          await cloudinary.uploader.destroy(pid).catch(() => {});
+        }
+
+        // remove from arrays
+        const kept = [];
+        const keptIds = [];
+        for (let i = 0; i < brc.imagePublicIds.length; i++) {
+          if (!toRemove.includes(brc.imagePublicIds[i])) {
+            kept.push(brc.imageUrls[i]);
+            keptIds.push(brc.imagePublicIds[i]);
+          }
+        }
+        brc.imageUrls = kept;
+        brc.imagePublicIds = keptIds;
+      }
+
+      await brc.save();
+      return res.redirect("/admin/brc");
+    } catch (err) {
+      console.error("Error updating BRC:", err);
+      return res.status(500).send("Error updating BRC.");
     }
-
-    brc.name = name;
-    brc.statement = statement;
-    brc.coverImage = coverImage;
-    brc.images = images;
-    // Slug recalculates automatically on save due to pre-save hook in model
-    await brc.save();
-
-    res.redirect("/admin/brc");
-  } catch (err) {
-    console.error("Error updating BRC:", err);
-    res.status(500).send("Error updating BRC.");
   }
-});
+);
 
 // Delete BRC
 app.post("/admin/brc/:id/delete", requireAdmin, async (req, res) => {

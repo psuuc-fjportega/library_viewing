@@ -4,20 +4,48 @@
 </section>
 
 <div class="container" style="margin-bottom: 2rem;">
-  <a href="/brc" class="btn btn-outline btn-small fade-in" style="animation-delay: 0.1s;">← Back to All Centers</a>
+  <a href="/brc" class="btn btn-outline btn-small fade-in" style="animation-delay: 0.1s;">
+    ← Back to All Centers
+  </a>
 </div>
 
+<%
+  // ----------------------------
+  // Resolve COVER URL (Cloudinary preferred)
+  // ----------------------------
+  const resolvedCoverUrl =
+    (brc.coverUrl && brc.coverUrl.trim()) ||
+    (brc._coverResolvedUrl && brc._coverResolvedUrl.trim()) ||
+    (brc.coverImage && brc.coverImage.trim() ? ("/assets/brc/uploads/" + brc.coverImage) : "");
+
+  // ----------------------------
+  // Resolve GALLERY URL LIST (Cloudinary preferred)
+  // Priority:
+  // 1) brc.imageUrls (Cloudinary)
+  // 2) brc._imagesResolvedUrls (if you had a migration helper)
+  // 3) brc.images mapped to local folder
+  // ----------------------------
+  const resolvedGalleryUrls =
+    (Array.isArray(brc.imageUrls) && brc.imageUrls.length > 0)
+      ? brc.imageUrls.filter(Boolean)
+      : (Array.isArray(brc._imagesResolvedUrls) && brc._imagesResolvedUrls.length > 0)
+        ? brc._imagesResolvedUrls.filter(Boolean)
+        : (Array.isArray(brc.images) && brc.images.length > 0)
+          ? brc.images.filter(Boolean).map(fn => "/assets/brc/uploads/" + fn)
+          : [];
+%>
+
 <section class="card fade-in" style="animation-delay: 0.2s; margin-bottom: 2rem;">
-  <% if (brc.coverImage || brc.coverUrl || brc._coverResolvedUrl) { %>
+  <% if (resolvedCoverUrl) { %>
     <img
-      src="<%= brc.coverUrl || brc._coverResolvedUrl || ('/assets/brc/uploads/' + brc.coverImage) %>"
+      src="<%= resolvedCoverUrl %>"
       alt="<%= brc.name %> Cover"
       style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 12px; margin-bottom: 20px;"
     >
   <% } %>
 
   <div style="font-size: 1.1rem; line-height: 1.8; color: var(--text-color);">
-    <% brc.statement.split('\n').forEach(paragraph => { %>
+    <% (brc.statement || "").split('\n').forEach(paragraph => { %>
       <% if (paragraph.trim()) { %>
         <p style="margin-bottom: 1rem;"><%= paragraph %></p>
       <% } %>
@@ -25,14 +53,14 @@
   </div>
 </section>
 
-<% if (brc.images && brc.images.length > 0) { %>
+<% if (resolvedGalleryUrls.length > 0) { %>
   <section class="fade-in" style="animation-delay: 0.3s; margin-top: 40px;">
     <h2 style="margin-bottom: 20px; font-family: 'Playfair Display', serif; color: var(--primary-color);">
       Gallery
     </h2>
 
     <div class="gallery-grid">
-      <% brc.images.forEach((img, idx) => { %>
+      <% resolvedGalleryUrls.forEach((imgUrl, idx) => { %>
         <div
           class="gallery-item"
           onclick="openLightbox(<%= idx %>)"
@@ -41,8 +69,8 @@
           onmouseout="this.style.transform='scale(1)'"
         >
           <img
-            src="<%= (brc.imageUrls && brc.imageUrls[idx]) || (brc._imagesResolvedUrls && brc._imagesResolvedUrls[idx]) || ('/assets/brc/uploads/' + img) %>"
-            alt="<%= brc.name %> Image"
+            src="<%= imgUrl %>"
+            alt="<%= brc.name %> Image <%= idx + 1 %>"
             style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px;"
           >
         </div>
@@ -51,34 +79,46 @@
   </section>
 
   <!-- Lightbox Modal -->
-  <div id="lightbox" class="lightbox"
-    style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.9);">
-    <span class="close" onclick="closeLightbox()"
-      style="position:absolute; top:20px; right:35px; color:#f1f1f1; font-size:40px; font-weight:bold; cursor:pointer;">&times;</span>
+  <div
+    id="lightbox"
+    class="lightbox"
+    style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.9);"
+  >
+    <span
+      class="close"
+      onclick="closeLightbox()"
+      style="position:absolute; top:20px; right:35px; color:#f1f1f1; font-size:40px; font-weight:bold; cursor:pointer;"
+    >&times;</span>
 
-    <img class="lightbox-content" id="img01"
-      style="margin:auto; display:block; max-width:90%; max-height:80vh; margin-top: 5vh;">
+    <img
+      class="lightbox-content"
+      id="img01"
+      style="margin:auto; display:block; max-width:90%; max-height:80vh; margin-top: 5vh;"
+    >
 
-    <div id="caption"
-      style="margin:auto; display:block; width:80%; max-width:700px; text-align:center; color:#ccc; padding:10px 0; height:150px;">
-    </div>
+    <div
+      id="caption"
+      style="margin:auto; display:block; width:80%; max-width:700px; text-align:center; color:#ccc; padding:10px 0; height:150px;"
+    ></div>
 
-    <a class="prev" onclick="changeImage(-1)"
-      style="cursor:pointer; position:absolute; top:50%; width:auto; padding:16px; margin-top:-50px; color:white; font-weight:bold; font-size:40px; transition:0.6s ease; border-radius:0 3px 3px 0; user-select:none; left:0;">&#10094;</a>
-    <a class="next" onclick="changeImage(1)"
-      style="cursor:pointer; position:absolute; top:50%; width:auto; padding:16px; margin-top:-50px; color:white; font-weight:bold; font-size:40px; transition:0.6s ease; border-radius:3px 0 0 3px; user-select:none; right:0;">&#10095;</a>
+    <a
+      class="prev"
+      onclick="changeImage(-1)"
+      style="cursor:pointer; position:absolute; top:50%; width:auto; padding:16px; margin-top:-50px; color:white; font-weight:bold; font-size:40px; transition:0.6s ease; border-radius:0 3px 3px 0; user-select:none; left:0;"
+    >&#10094;</a>
+
+    <a
+      class="next"
+      onclick="changeImage(1)"
+      style="cursor:pointer; position:absolute; top:50%; width:auto; padding:16px; margin-top:-50px; color:white; font-weight:bold; font-size:40px; transition:0.6s ease; border-radius:3px 0 0 3px; user-select:none; right:0;"
+    >&#10095;</a>
   </div>
 
-  <% 
-    // Build a final URL list for JS lightbox
-    const jsUrls = (brc.imageUrls && brc.imageUrls.length === brc.images.length)
-      ? brc.imageUrls
-      : (brc._imagesResolvedUrls && brc._imagesResolvedUrls.length === brc.images.length)
-        ? brc._imagesResolvedUrls
-        : brc.images.map(fn => '/assets/brc/uploads/' + fn);
-  %>
-
-  <div id="brc-gallery-data" data-images="<%= JSON.stringify(jsUrls) %>" style="display: none;"></div>
+  <div
+    id="brc-gallery-data"
+    data-images="<%= JSON.stringify(resolvedGalleryUrls) %>"
+    style="display: none;"
+  ></div>
 
   <script>
     const dataElement = document.getElementById("brc-gallery-data");
@@ -99,6 +139,8 @@
     }
 
     function showImage(n) {
+      if (!images.length) return;
+
       if (n >= images.length) currentIndex = 0;
       else if (n < 0) currentIndex = images.length - 1;
       else currentIndex = n;
