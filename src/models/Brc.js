@@ -11,31 +11,33 @@ const BrcSchema = new mongoose.Schema(
     slug: {
       type: String,
       unique: true,
+      index: true,
     },
     statement: {
       type: String,
       required: true,
     },
-
-    // Backward-compatible local filename (old uploads)
-    coverImage: { type: String, default: "" },
-    images: { type: [String], default: [] },
-
-    // Cloudinary (new uploads)
-    coverUrl: { type: String, default: "" },          // secure_url
-    coverPublicId: { type: String, default: "" },     // public_id
-
-    imageUrls: { type: [String], default: [] },       // secure_url list
-    imagePublicIds: { type: [String], default: [] },  // public_id list
+    coverImage: {
+      type: String,
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
   },
   { timestamps: true }
 );
 
+// IMPORTANT: use function(next) not arrow function, so `this` works
 BrcSchema.pre("save", function (next) {
-  if (this.isModified("name")) {
-    this.slug = slugify(this.name, { lower: true, strict: true });
+  try {
+    if (this.isModified("name") || this.isNew) {
+      this.slug = slugify(this.name, { lower: true, strict: true });
+    }
+    return next();
+  } catch (err) {
+    return next(err);
   }
-  next();
 });
 
 module.exports = mongoose.model("Brc", BrcSchema);
