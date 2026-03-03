@@ -559,6 +559,23 @@ app.post(
   }
 );
 
+// Edit BRC Form (GET)
+app.get("/admin/brc/:id/edit", requireAdmin, async (req, res) => {
+  try {
+    const brc = await Brc.findById(req.params.id);
+    if (!brc) return res.redirect("/admin/brc");
+
+    res.render("pages/admin-brc-form", {
+      title: "Admin — Edit BRC",
+      layout: "layouts/admin",
+      brc,
+    });
+  } catch (err) {
+    console.error("Error loading edit form:", err);
+    res.status(500).send("Server error");
+  }
+});
+
 // Handle Edit BRC
 app.post(
   "/admin/brc/:id/edit",
