@@ -605,10 +605,23 @@ app.post("/admin/brc/:id/delete", requireAdmin, async (req, res) => {
 
 app.get("/brc", async (req, res) => {
   try {
-    const brcs = await Brc.find().sort({ name: 1 });
+    const q = (req.query.q || "").trim();
+
+    const filter = q
+      ? {
+          $or: [
+            { name: { $regex: q, $options: "i" } },
+            { statement: { $regex: q, $options: "i" } },
+          ],
+        }
+      : {};
+
+    const brcs = await Brc.find(filter).sort({ name: 1 });
+
     res.render("pages/brc", {
       title: "Barangay Reading Centers",
       brcs,
+      q, // pass query back to the page so the input can keep its value
     });
   } catch (err) {
     console.error("Error loading BRCs:", err);
