@@ -446,7 +446,7 @@ app.post(
   async (req, res) => {
     try {
       if (!req.files || req.files.length === 0) {
-        return res.redirect("/admin/gallery");
+        return res.status(400).send("No images received.");
       }
 
       const docs = [];
@@ -457,14 +457,14 @@ app.post(
           publicId: r.public_id,
           originalName: f.originalname,
           caption: "UCPL Gallery",
-          filename: "", // keep old field empty
+          filename: "", // keep empty (only for old local uploads)
         });
       }
 
       await GalleryImage.insertMany(docs);
       return res.redirect("/admin/gallery");
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error("Gallery upload error:", err);
       return res.status(500).send("Upload failed.");
     }
   }
@@ -476,22 +476,22 @@ app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
     const img = await GalleryImage.findById(req.params.id);
     if (!img) return res.redirect("/admin/gallery");
 
-    // Cloudinary delete (new)
+    // ✅ If Cloudinary
     if (img.publicId) {
       await cloudinary.uploader.destroy(img.publicId).catch(() => {});
     }
 
-    // Local delete fallback (old)
-    if (!img.publicId && img.filename) {
+    // ✅ Backward-compatible: if local filename exists, attempt delete
+    if (img.filename) {
       const fp = path.join(galleryUploadDir, img.filename);
       if (fs.existsSync(fp)) fs.unlinkSync(fp);
     }
 
     await GalleryImage.findByIdAndDelete(req.params.id);
-    res.redirect("/admin/gallery");
+    return res.redirect("/admin/gallery");
   } catch (e) {
-    console.error(e);
-    res.status(500).send("Delete failed.");
+    console.error("Gallery delete error:", e);
+    return res.status(500).send("Delete failed.");
   }
 });
 
