@@ -2908,3 +2908,39 @@ section.grid {
   padding: 12px 24px;
   font-size: 1rem;
 }
+
+.lightbox-img {
+  max-width: 96vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+}
+
+.lightbox-caption {
+  margin-top: 14px;
+  color: #fff;
+  font-size: 0.95rem;
+  text-align: center;
+  max-width: min(92vw, 1200px);
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 0;
+  background: rgba(0, 0, 0, .35);
+  color: #fff;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.lightbox-close:hover {
+  background: rgba(0, 0, 0, .55);
+}
