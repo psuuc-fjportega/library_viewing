@@ -56,15 +56,23 @@
   <% } %>
 
     <!-- Lightbox -->
-    <div class="lightbox" id="lightbox" aria-hidden="true" style="display:none;">
+    <div class="lightbox" id="lightbox" aria-hidden="true" style="display:none;"
+      data-count="<%= images ? images.length : 0 %>">
       <button class="lightbox-close" type="button" aria-label="Close">×</button>
-      <img class="lightbox-img" src="" alt="">
-      <div class="lightbox-caption"></div>
+      <button class="lightbox-prev" type="button" aria-label="Previous image">&#10094;</button>
+      <button class="lightbox-next" type="button" aria-label="Next image">&#10095;</button>
+
+      <div class="lightbox-inner">
+        <img class="lightbox-img" src="" alt="">
+        <div class="lightbox-caption"></div>
+      </div>
+
+      <div class="lightbox-counter"></div>
     </div>
 
     <script>
-      (function () {
-        // Prevent double-init if you already have another lightbox in main.js
+      document.addEventListener("DOMContentLoaded", function () {
+        // Prevent double-init
         if (window.__UCPL_GALLERY_LIGHTBOX_INIT__) return;
         window.__UCPL_GALLERY_LIGHTBOX_INIT__ = true;
 
@@ -74,6 +82,9 @@
         const imgEl = lightbox.querySelector(".lightbox-img");
         const captionEl = lightbox.querySelector(".lightbox-caption");
         const closeBtn = lightbox.querySelector(".lightbox-close");
+        const prevBtn = lightbox.querySelector(".lightbox-prev");
+        const nextBtn = lightbox.querySelector(".lightbox-next");
+        const counterEl = lightbox.querySelector(".lightbox-counter");
 
         const thumbs = Array.from(document.querySelectorAll(".js-gallery-img"));
         if (!thumbs.length) return;
@@ -82,8 +93,10 @@
 
         // Make thumbnails clickable + keyboard accessible
         thumbs.forEach((t) => {
-          t.style.cursor = "pointer";
-          t.setAttribute("tabindex", "0");
+          // tabindex already set or we can set it here if missing
+          if (!t.hasAttribute("tabindex")) {
+            t.setAttribute("tabindex", "0");
+          }
         });
 
         function getFullUrl(i) {
@@ -103,6 +116,12 @@
           im.src = url;
         }
 
+        function updateCounter(i) {
+          if (counterEl) {
+            counterEl.textContent = `${i + 1} / ${thumbs.length}`;
+          }
+        }
+
         function openAt(i) {
           if (!thumbs.length) return;
 
@@ -111,15 +130,35 @@
           if (currentIndex >= thumbs.length) currentIndex = 0;
 
           const full = getFullUrl(currentIndex);
-          imgEl.src = full;
-          imgEl.alt = getCaption(currentIndex);
-          captionEl.textContent = getCaption(currentIndex);
+          const caption = getCaption(currentIndex);
 
-          lightbox.style.display = "flex";
-          lightbox.setAttribute("aria-hidden", "false");
-          document.body.style.overflow = "hidden";
+          // Set Loading State
+          lightbox.classList.add("is-loading");
 
-          // Preload neighbors for faster arrow navigation
+          // To trigger CSS animation on image change, we can force a reflow
+          imgEl.style.animation = 'none';
+          imgEl.offsetWidth; // trigger reflow (using offsetWidth is fine)
+          imgEl.style.animation = null;
+
+          // Load image fully before showing
+          const tempImg = new Image();
+          tempImg.onload = () => {
+            imgEl.src = full;
+            imgEl.alt = caption;
+            captionEl.textContent = caption;
+            lightbox.classList.remove("is-loading");
+          };
+          tempImg.src = full;
+
+          updateCounter(currentIndex);
+
+          if (lightbox.style.display === "none" || lightbox.style.display === "") {
+            lightbox.style.display = "flex";
+            lightbox.setAttribute("aria-hidden", "false");
+            document.body.style.overflow = "hidden";
+          }
+
+          // Preload neighbors
           preload((currentIndex + 1) % thumbs.length);
           preload((currentIndex - 1 + thumbs.length) % thumbs.length);
         }
@@ -128,12 +167,17 @@
           lightbox.style.display = "none";
           lightbox.setAttribute("aria-hidden", "true");
           document.body.style.overflow = "";
-          imgEl.src = "";
+          imgEl.src = ""; // Clear so it doesn't flash old image next time
         }
+
+        function nextImg(e) { e && e.stopPropagation(); openAt(currentIndex + 1); }
+        function prevImg(e) { e && e.stopPropagation(); openAt(currentIndex - 1); }
 
         // Click thumb to open
         thumbs.forEach((t, idx) => {
-          t.addEventListener("click", () => openAt(idx));
+          // Find the parent .gallery-item if thumb doesn't fill the click area perfectly,
+          // but clicking the img works fine here.
+          t.closest('.gallery-item')?.addEventListener("click", () => openAt(idx));
           t.addEventListener("keydown", (e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -142,12 +186,16 @@
           });
         });
 
-        // Close button
+        // Click actions
         if (closeBtn) closeBtn.addEventListener("click", close);
+        if (nextBtn) nextBtn.addEventListener("click", nextImg);
+        if (prevBtn) prevBtn.addEventListener("click", prevImg);
 
-        // Click outside image closes (only if clicking the overlay itself)
+        // Click outside image closes (clicking the overlay)
         lightbox.addEventListener("click", (e) => {
-          if (e.target === lightbox) close();
+          if (e.target === lightbox || e.target.classList.contains("lightbox-inner")) {
+            close();
+          }
         });
 
         // Keyboard controls
@@ -156,8 +204,8 @@
           if (!open) return;
 
           if (e.key === "Escape") close();
-          if (e.key === "ArrowRight") openAt(currentIndex + 1);
-          if (e.key === "ArrowLeft") openAt(currentIndex - 1);
+          if (e.key === "ArrowRight") nextImg();
+          if (e.key === "ArrowLeft") prevImg();
         });
-      })();
+      });
     </script>

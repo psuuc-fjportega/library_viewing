@@ -683,21 +683,145 @@ h3 {
 }
 
 /* =========================================================
-   GALLERY
+   GALLERY — Premium photo grid + lightbox
    ========================================================= */
+
+/* ── Grid ── */
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
+  gap: 18px;
   margin-top: 18px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 860px) {
   .gallery-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
 }
 
+@media (max-width: 520px) {
+  .gallery-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* ── Item wrapper ── */
+.gallery-item {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--bg2);
+  /* fallback colour prevents layout shift */
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, .07),
+    0 1px 3px rgba(0, 0, 0, .04);
+  border: 1px solid rgba(184, 145, 72, .14);
+  transition:
+    transform .28s cubic-bezier(.34, 1.56, .64, 1),
+    box-shadow .28s ease;
+  cursor: pointer;
+}
+
+.gallery-item:hover {
+  transform: translateY(-4px) scale(1.012);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, .13),
+    0 4px 10px rgba(184, 145, 72, .12);
+  border-color: rgba(184, 145, 72, .35);
+}
+
+/* ── Thumbnail image — fixed 4:3 prevents layout shift ── */
+.gallery-item img.js-gallery-img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  transition: transform .45s ease;
+}
+
+.gallery-item:hover img.js-gallery-img {
+  transform: scale(1.06);
+}
+
+/* ── Hover overlay ── */
+.gallery-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(170deg,
+      transparent 45%,
+      rgba(20, 20, 30, .55) 100%);
+  opacity: 0;
+  transition: opacity .28s ease;
+  z-index: 1;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.gallery-item:hover::before {
+  opacity: 1;
+}
+
+/* Zoom-in icon badge on hover */
+.gallery-item::after {
+  content: "⤢";
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .88);
+  color: var(--royal);
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(.7);
+  transition: opacity .22s ease, transform .22s cubic-bezier(.34, 1.56, .64, 1);
+  z-index: 2;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .18);
+}
+
+.gallery-item:hover::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* ── Caption — slides up from bottom ── */
+.gallery-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fdfbf5;
+  background: linear-gradient(transparent, rgba(15, 18, 22, .82));
+  transform: translateY(100%);
+  transition: transform .28s ease;
+  pointer-events: none;
+  line-height: 1.4;
+  letter-spacing: .1px;
+  /* clamp to 2 lines max */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gallery-item:hover .gallery-caption {
+  transform: translateY(0);
+}
+
+/* ── Empty state (already in admin CSS, also cover public side) ── */
 .gallery-card {
   padding: 14px;
 }
@@ -738,6 +862,218 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* =========================================================
+   LIGHTBOX — full-screen overlay
+   ========================================================= */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: none;
+  /* toggled to flex by JS */
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 10, 14, .92);
+  backdrop-filter: blur(14px) saturate(.8);
+  -webkit-backdrop-filter: blur(14px) saturate(.8);
+  /* entry animation */
+  animation: lb-fade-in .22s ease both;
+}
+
+@keyframes lb-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* ── Inner frame that holds image ── */
+.lightbox-inner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(92vw, 1200px);
+  max-height: 90vh;
+}
+
+/* ── The lightbox image ── */
+.lightbox-img {
+  display: block;
+  max-width: 100%;
+  max-height: 82vh;
+  object-fit: contain;
+  border-radius: 10px;
+  box-shadow:
+    0 32px 80px rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(255, 255, 255, .06);
+  /* image swap animation */
+  animation: lb-img-in .22s ease both;
+}
+
+@keyframes lb-img-in {
+  from {
+    opacity: 0;
+    transform: scale(.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Loading spinner (added by JS via class) ── */
+.lightbox.is-loading .lightbox-img {
+  opacity: 0;
+}
+
+.lightbox.is-loading::after {
+  content: "";
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, .15);
+  border-top-color: var(--gold2);
+  animation: lb-spin .7s linear infinite;
+}
+
+@keyframes lb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Caption ── */
+.lightbox-caption {
+  position: absolute;
+  bottom: -36px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 13.5px;
+  color: rgba(253, 251, 245, .75);
+  letter-spacing: .2px;
+  line-height: 1.5;
+  pointer-events: none;
+}
+
+/* ── Close button ── */
+.lightbox-close {
+  position: fixed;
+  top: 18px;
+  right: 20px;
+  z-index: 9010;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .18);
+  background: rgba(30, 30, 40, .75);
+  color: rgba(255, 255, 255, .9);
+  font-size: 22px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background .18s ease, transform .18s ease;
+  line-height: 1;
+}
+
+.lightbox-close:hover {
+  background: rgba(115, 42, 51, .75);
+  transform: scale(1.1);
+}
+
+.lightbox-close:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 3px;
+}
+
+/* ── Arrow buttons ── */
+.lightbox-prev,
+.lightbox-next {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 9010;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, .15);
+  background: rgba(30, 30, 40, .72);
+  color: rgba(255, 255, 255, .9);
+  font-size: 22px;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background .18s ease, transform .18s ease;
+  user-select: none;
+}
+
+.lightbox-prev {
+  left: 16px;
+}
+
+.lightbox-next {
+  right: 16px;
+}
+
+.lightbox-prev:hover,
+.lightbox-next:hover {
+  background: rgba(184, 145, 72, .5);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.lightbox-prev:focus-visible,
+.lightbox-next:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 3px;
+}
+
+/* Counter badge */
+.lightbox-counter {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: rgba(255, 255, 255, .5);
+  letter-spacing: .5px;
+  pointer-events: none;
+}
+
+/* Hide arrows when only 1 image */
+.lightbox[data-count="1"] .lightbox-prev,
+.lightbox[data-count="1"] .lightbox-next,
+.lightbox[data-count="1"] .lightbox-counter {
+  display: none;
+}
+
+/* Mobile tweaks */
+@media (max-width: 600px) {
+  .lightbox-prev {
+    left: 6px;
+  }
+
+  .lightbox-next {
+    right: 6px;
+  }
+
+  .lightbox-prev,
+  .lightbox-next {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+
+  .lightbox-img {
+    border-radius: 6px;
+  }
 }
 
 /* =========================================================
