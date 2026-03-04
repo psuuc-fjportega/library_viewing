@@ -837,14 +837,6 @@ h3 {
   font-weight: 700;
 }
 
-.brand-logo {
-  height: 38px;
-  width: auto;
-  display: block;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, .1));
-}
-
 /* Make the navbar logo "alive" (subtle + professional) */
 .brand-logo {
   display: block;
