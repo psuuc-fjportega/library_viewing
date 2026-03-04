@@ -1,6 +1,7 @@
 const multer = require("multer");
 const GalleryImage = require("./models/GalleryImage");
 require("dotenv").config();
+const compression = require("compression");
 
 const fs = require("fs");
 const express = require("express");
@@ -21,6 +22,30 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
+
+function cldThumb(publicId) {
+  if (!publicId) return "";
+  return cloudinary.url(publicId, {
+    secure: true,
+    transformation: [
+      { width: 480, height: 320, crop: "fill", gravity: "auto" },
+      { fetch_format: "auto", quality: "auto" },
+      { dpr: "auto" }
+    ],
+  });
+}
+
+function cldFull(publicId) {
+  if (!publicId) return "";
+  return cloudinary.url(publicId, {
+    secure: true,
+    transformation: [
+      { width: 1600, crop: "limit" },
+      { fetch_format: "auto", quality: "auto" },
+      { dpr: "auto" }
+    ],
+  });
+}
 
 // Upload helper (buffer -> cloudinary)
 function uploadBufferToCloudinary(buffer, folder) {
@@ -59,8 +84,14 @@ app.use(
   })
 );
 
+app.use(compression());
+
 // Static files
-app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "../public"), {
+  maxAge: "1d",
+  etag: true,
+  lastModified: true,
+}));
 
 const galleryUploadDir = path.join(__dirname, "../public/assets/gallery/uploads");
 
@@ -207,12 +238,30 @@ app.get("/programs/:slug", (req, res) => {
 app.get("/gallery", async (req, res) => {
   const LIMIT = 20;
   const page = Math.max(1, parseInt(req.query.page) || 1);
+
   const total = await GalleryImage.countDocuments();
   const totalPages = Math.ceil(total / LIMIT);
-  const images = await GalleryImage.find()
+
+  const rawImages = await GalleryImage.find()
     .sort({ createdAt: -1 })
     .skip((page - 1) * LIMIT)
-    .limit(LIMIT);
+    .limit(LIMIT)
+    .lean();
+
+  const images = rawImages.map((img) => {
+    // If Cloudinary exists, use optimized thumb + full
+    if (img.publicId) {
+      return {
+        ...img,
+        _thumbUrl: cldThumb(img.publicId),
+        _fullUrl: cldFull(img.publicId),
+      };
+    }
+
+    // Legacy fallback
+    const local = "/assets/gallery/uploads/" + img.filename;
+    return { ...img, _thumbUrl: local, _fullUrl: local };
+  });
 
   res.render("pages/gallery", {
     title: "Gallery",

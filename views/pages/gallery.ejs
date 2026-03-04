@@ -9,10 +9,15 @@
   <% } else { %>
     <% images.forEach(img => { %>
       <div class="gallery-item reveal">
-        <img
-          src="<%= img.url || img._resolvedUrl || ('/assets/gallery/uploads/' + img.filename) %>"
-          alt="<%= img.caption %>"
-        >
+       <img
+  src="<%= img._thumbUrl %>"
+  data-full="<%= img._fullUrl %>"
+  alt="<%= img.caption %>"
+  loading="lazy"
+  decoding="async"
+  width="480"
+  height="320"
+/>
         <div class="gallery-caption">
           <%= img.caption %>
         </div>
