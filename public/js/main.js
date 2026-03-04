@@ -140,26 +140,68 @@ if (toggle && navLinks) {
   const lightboxImg = lightbox.querySelector(".lightbox-img");
   const closeBtn = lightbox.querySelector(".lightbox-close");
   const caption = lightbox.querySelector(".lightbox-caption");
-  const images = document.querySelectorAll(".gallery-item img");
 
-  const open = (img) => {
+  // Select only gallery images
+  const images = Array.from(document.querySelectorAll(".gallery-item img"));
+
+  let currentIndex = -1;
+
+  const getFullSrc = (img) => img.getAttribute("data-full") || img.src;
+
+  const openAt = (idx) => {
+    if (!images.length) return;
+
+    currentIndex = idx;
+    if (currentIndex < 0) currentIndex = images.length - 1;
+    if (currentIndex >= images.length) currentIndex = 0;
+
+    const img = images[currentIndex];
+    const fullSrc = getFullSrc(img);
+
     lightbox.classList.add("open");
-    lightboxImg.src = img.src;
+    lightboxImg.src = fullSrc;
     lightboxImg.alt = img.alt || "Gallery Image";
     if (caption) caption.textContent = img.alt || "";
     document.body.style.overflow = "hidden";
+
+    // Preload next/prev full images for faster navigation
+    const next = images[(currentIndex + 1) % images.length];
+    const prev = images[(currentIndex - 1 + images.length) % images.length];
+    [next, prev].forEach((i) => {
+      const url = getFullSrc(i);
+      if (url) {
+        const pre = new Image();
+        pre.src = url;
+      }
+    });
   };
+
+  const open = (img) => openAt(images.indexOf(img));
 
   const close = () => {
     lightbox.classList.remove("open");
     lightboxImg.src = "";
     document.body.style.overflow = "";
+    currentIndex = -1;
   };
 
-  images.forEach(img => img.addEventListener("click", () => open(img)));
+  // Click to open lightbox (use full image)
+  images.forEach((img, idx) => img.addEventListener("click", () => openAt(idx)));
+
+  // Close handlers
   if (closeBtn) closeBtn.addEventListener("click", close);
-  lightbox.addEventListener("click", e => { if (e.target === lightbox) close(); });
-  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+  lightbox.addEventListener("click", (e) => {
+    if (e.target === lightbox) close();
+  });
+
+  // Keyboard navigation
+  document.addEventListener("keydown", (e) => {
+    if (!lightbox.classList.contains("open")) return;
+
+    if (e.key === "Escape") close();
+    if (e.key === "ArrowRight") openAt(currentIndex + 1);
+    if (e.key === "ArrowLeft") openAt(currentIndex - 1);
+  });
 })();
 
 /* ── Triple-click Admin Access ── */
