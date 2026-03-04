@@ -108,6 +108,12 @@ const uploadBrc = multer({
   limits: { fileSize: 15 * 1024 * 1024 },
 });
 
+const uploadGallery = multer({
+  storage: multer.memoryStorage(), // upload to Cloudinary
+  fileFilter,
+  limits: { fileSize: 15 * 1024 * 1024 },
+});
+
 
 // View engine
 app.set("view engine", "ejs");
@@ -433,25 +439,36 @@ app.get("/admin/gallery", requireAdmin, async (req, res) => {
 });
 
 // Multiple upload: up to 20 images in one submit
-app.post("/admin/gallery/upload", requireAdmin, upload.array("images", 20), async (req, res) => {
-  try {
-    if (!req.files || req.files.length === 0) {
+app.post(
+  "/admin/gallery/upload",
+  requireAdmin,
+  uploadGallery.array("images", 20),
+  async (req, res) => {
+    try {
+      if (!req.files || req.files.length === 0) {
+        return res.redirect("/admin/gallery");
+      }
+
+      const docs = [];
+      for (const f of req.files) {
+        const r = await uploadBufferToCloudinary(f.buffer, "ucpl/gallery");
+        docs.push({
+          url: r.secure_url,
+          publicId: r.public_id,
+          originalName: f.originalname,
+          caption: "UCPL Gallery",
+          filename: "", // keep old field empty
+        });
+      }
+
+      await GalleryImage.insertMany(docs);
       return res.redirect("/admin/gallery");
+    } catch (err) {
+      console.error("Upload error:", err);
+      return res.status(500).send("Upload failed.");
     }
-
-    const docs = req.files.map(f => ({
-      filename: f.filename,
-      originalName: f.originalname, // ✅ EXACT FIELD NAME
-      caption: "UCPL Gallery"
-    })); { }
-
-    await GalleryImage.insertMany(docs);
-    return res.redirect("/admin/gallery");
-  } catch (err) {
-    console.error("Upload error:", err);
-    return res.status(500).send("Upload failed.");
   }
-});
+);
 
 // Optional: delete image
 app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
@@ -459,9 +476,16 @@ app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
     const img = await GalleryImage.findById(req.params.id);
     if (!img) return res.redirect("/admin/gallery");
 
-    // remove file
-    const fp = path.join(galleryUploadDir, img.filename);
-    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    // Cloudinary delete (new)
+    if (img.publicId) {
+      await cloudinary.uploader.destroy(img.publicId).catch(() => {});
+    }
+
+    // Local delete fallback (old)
+    if (!img.publicId && img.filename) {
+      const fp = path.join(galleryUploadDir, img.filename);
+      if (fs.existsSync(fp)) fs.unlinkSync(fp);
+    }
 
     await GalleryImage.findByIdAndDelete(req.params.id);
     res.redirect("/admin/gallery");
@@ -470,7 +494,6 @@ app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
     res.status(500).send("Delete failed.");
   }
 });
-
 
 // --------------------
 // ADMIN BRC ROUTES
