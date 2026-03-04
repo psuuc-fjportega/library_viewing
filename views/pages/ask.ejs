@@ -28,6 +28,18 @@
             </p>
 
             <form class="form" method="POST" action="/ask-a-librarian">
+              <!-- Honeypot -->
+              <div style="display:none;" aria-hidden="true">
+                <label for="botCheck">Leave this field blank</label>
+                <input type="text" name="botCheck" id="botCheck" tabindex="-1">
+              </div>
+
+              <!-- Timing check -->
+              <input type="hidden" name="formStartTime" id="formStartTime" value="">
+              <script>
+                document.getElementById('formStartTime').value = Date.now();
+              </script>
+
               <div class="form-group">
                 <label class="form-label">Full Name</label>
                 <input name="name" type="text" placeholder="Enter your name" required>

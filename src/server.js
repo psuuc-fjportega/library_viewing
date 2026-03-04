@@ -10,6 +10,12 @@ const expressLayouts = require("express-ejs-layouts");
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const session = require("express-session");
+const MongoStore = require("connect-mongo").default || require("connect-mongo").MongoStore || require("connect-mongo");
+const bcrypt = require("bcryptjs");
+const rateLimit = require("express-rate-limit");
+const helmet = require("helmet");
+const expressMongoSanitize = require("express-mongo-sanitize");
+const xssClean = require("xss-clean");
 
 const Inquiry = require("./models/Inquiry");
 const Brc = require("./models/Brc"); // BRC Model
@@ -70,21 +76,49 @@ const app = express();
 // --------------------
 // MIDDLEWARE
 // --------------------
+// Trus proxy for correct IP identification behind Render
+app.set('trust proxy', 1);
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+// Sanitize user input
+app.use(expressMongoSanitize());
+app.use(xssClean());
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev_secret_change_me",
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({ mongoUrl: MONGODB_URI }),
     cookie: {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 2 // 2 hours
     }
   })
 );
 
+// Secure headers
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(compression());
+
+// Rate limiters
+const adminLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Limit each IP to 5 requests per `window` (here, per 15 minutes)
+  message: "Too many login attempts from this IP, please try again after 15 minutes"
+});
+
+const askLibrarianLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5, // Limit each IP to 5 requests per hour
+  message: "Too many inquiries from this IP, please try again after an hour"
+});
 
 // Static files
 app.use(express.static(path.join(__dirname, "../public"), {
@@ -282,8 +316,21 @@ app.get("/ask-a-librarian", (req, res) => {
 });
 
 // Ask a Librarian (POST) - SAVE TO DB + OPTIONAL EMAIL
-app.post("/ask-a-librarian", async (req, res) => {
-  const { name, email, category, message } = req.body;
+app.post("/ask-a-librarian", askLibrarianLimiter, async (req, res) => {
+  const { name, email, category, message, botCheck, formStartTime } = req.body;
+
+  // Honeypot check
+  if (botCheck) {
+    return res.status(400).send("Spam detected.");
+  }
+
+  // Timing check: if form is submitted in under 3 seconds, likely a bot
+  if (formStartTime) {
+    const elapsed = Date.now() - parseInt(formStartTime, 10);
+    if (elapsed < 3000) {
+      return res.status(400).send("Form submitted too quickly. Please try again.");
+    }
+  }
 
   if (!name || !email || !category || !message) {
     return res.render("pages/ask", {
@@ -448,17 +495,32 @@ app.get("/admin/fix-status", requireAdmin, async (req, res) => {
 });
 
 // Admin login submit
-app.post("/admin/login", (req, res) => {
-  const { password } = req.body;
+app.post("/admin/login", adminLoginLimiter, (req, res) => {
+  const { username, password } = req.body;
 
-  if (password === process.env.ADMIN_PASSWORD) {
-    req.session.isAdmin = true;
-    return res.redirect("/admin/inquiries");
+  const validUsername = process.env.ADMIN_USERNAME || "admin";
+  const validPasswordHash = process.env.ADMIN_PASSWORD_HASH;
+
+  if (username === validUsername) {
+    let isValid = false;
+
+    // Backward compatibility: If no hash is set in .env, fallback to plain text ADMIN_PASSWORD check 
+    // BUT we strongly encourage setting ADMIN_PASSWORD_HASH in Render.
+    if (validPasswordHash) {
+      isValid = bcrypt.compareSync(password, validPasswordHash);
+    } else if (process.env.ADMIN_PASSWORD) {
+      isValid = password === process.env.ADMIN_PASSWORD;
+    }
+
+    if (isValid) {
+      req.session.isAdmin = true;
+      return res.redirect("/admin/inquiries");
+    }
   }
 
   return res.render("pages/admin-login", {
     title: "Admin Login",
-    error: "Incorrect password."
+    error: "Incorrect username or password."
   });
 });
 
@@ -527,7 +589,7 @@ app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
 
     // ✅ If Cloudinary
     if (img.publicId) {
-      await cloudinary.uploader.destroy(img.publicId).catch(() => {});
+      await cloudinary.uploader.destroy(img.publicId).catch(() => { });
     }
 
     // ✅ Backward-compatible: if local filename exists, attempt delete
@@ -671,7 +733,7 @@ app.post(
       if (req.files?.coverImage?.[0]) {
         // delete old cover from Cloudinary
         if (brc.coverPublicId) {
-          await cloudinary.uploader.destroy(brc.coverPublicId).catch(() => {});
+          await cloudinary.uploader.destroy(brc.coverPublicId).catch(() => { });
         }
 
         const r = await uploadBufferToCloudinary(
@@ -700,7 +762,7 @@ app.post(
 
         // delete from cloudinary
         for (const pid of toRemove) {
-          await cloudinary.uploader.destroy(pid).catch(() => {});
+          await cloudinary.uploader.destroy(pid).catch(() => { });
         }
 
         // remove from arrays
@@ -764,11 +826,11 @@ app.get("/brc", async (req, res) => {
 
     const filter = q
       ? {
-          $or: [
-            { name: { $regex: q, $options: "i" } },
-            { statement: { $regex: q, $options: "i" } },
-          ],
-        }
+        $or: [
+          { name: { $regex: q, $options: "i" } },
+          { statement: { $regex: q, $options: "i" } },
+        ],
+      }
       : {};
 
     const brcs = await Brc.find(filter).sort({ name: 1 });
