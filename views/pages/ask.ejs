@@ -8,95 +8,105 @@
 
 
 <section class="grid-2">
-  <% if (typeof success !== "undefined" && success) { %>
-  <div class="note-box" style="margin-top:14px;">
-    ✅ Your inquiry was sent. We’ll get back to you soon.
-  </div>
-<% } %>
-
-<% if (typeof error !== "undefined" && error) { %>
-  <div class="note-box" style="margin-top:14px; border-color: rgba(255,80,80,.4);">
-    ❌ <%= error %>
-  </div>
-<% } %>
-
-  <div class="card">
-    <h2>Send Your Question</h2>
-    <p class="muted" style="margin-top:0;">
-      Please provide complete details so we can respond faster.
-    </p>
-
-  <form class="form" method="POST" action="/ask-a-librarian">
-  <label>Full Name</label>
-  <input name="name" type="text" placeholder="Enter your name" required>
-
-  <label>Email Address</label>
-  <input name="email" type="email" placeholder="Enter your email" required>
-
-  <label>Category</label>
-  <select name="category" required>
-    <option value="">Select a category</option>
-    <option>Book Inquiry</option>
-    <option>Research Assistance</option>
-    <option>Library Membership</option>
-    <option>Programs & Events</option>
-    <option>Tech4Ed / Computer Use</option>
-    <option>Other</option>
-  </select>
-
-  <label>Your Question</label>
-  <textarea name="message" rows="5" placeholder="Type your question here..." required></textarea>
-
-  <button type="submit" class="btn btn-primary">Submit Inquiry</button>
-</form>
-  </div>
-
-  <div class="card">
-    <h2>Frequently Asked Questions</h2>
-
-    <div class="faq">
-      <div class="faq-item">
-        <h3>📌 How do I register as a library member?</h3>
-        <p class="muted">
-          Visit the library and bring a valid ID. Additional requirements may apply depending on your category.
-        </p>
-      </div>
-
-      <div class="faq-item">
-        <h3>📚 How many books can I borrow?</h3>
-        <p class="muted">
-          Borrowing limits depend on library policy. You may check the Policies page for updated guidelines.
-        </p>
-      </div>
-
-      <div class="faq-item">
-        <h3>⏳ Can I renew borrowed books?</h3>
-        <p class="muted">
-          Yes, renewals are allowed unless the book is reserved by another user.
-        </p>
-      </div>
-
-      <div class="faq-item">
-        <h3>🖥️ Do you offer computer and internet access?</h3>
-        <p class="muted">
-          Yes. Tech4Ed and computer literacy programs are available for students and community members.
-        </p>
-      </div>
-
-      <div class="faq-item">
-        <h3>📍 Where is the library located?</h3>
-        <p class="muted">
-          Urdaneta City, Pangasinan. Please visit the Contact page for complete address and office hours.
-        </p>
-      </div>
+  <% if (typeof success !=="undefined" && success) { %>
+    <div class="alert alert-success" style="margin-top:14px;">
+      <span class="alert-icon">✅</span> Your inquiry was sent. We'll get back to you soon.
     </div>
+    <% } %>
 
-    <div class="contact-box">
-      <h3>Library Assistance</h3>
-      <p class="muted">
-        You may also visit us personally during office hours or contact the library through the Contact page.
-      </p>
-      <a href="/contact" class="link">Go to Contact Page →</a>
-    </div>
-  </div>
+      <% if (typeof error !=="undefined" && error) { %>
+        <div class="alert alert-error" style="margin-top:14px;">
+          <span class="alert-icon">❌</span>
+          <%= error %>
+        </div>
+        <% } %>
+
+          <div class="card">
+            <h2>Send Your Question</h2>
+            <p class="muted" style="margin-top:0;">
+              Please provide complete details so we can respond faster.
+            </p>
+
+            <form class="form" method="POST" action="/ask-a-librarian">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input name="name" type="text" placeholder="Enter your name" required>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Email Address</label>
+                <input name="email" type="email" placeholder="Enter your email" required>
+                <p class="form-hint">We reply within 1–2 business days.</p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Category</label>
+                <select name="category" required>
+                  <option value="">Select a category</option>
+                  <option>Book Inquiry</option>
+                  <option>Research Assistance</option>
+                  <option>Library Membership</option>
+                  <option>Programs & Events</option>
+                  <option>Tech4Ed / Computer Use</option>
+                  <option>Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Your Question</label>
+                <textarea name="message" rows="5" placeholder="Type your question here..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg">Submit Inquiry</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>Frequently Asked Questions</h2>
+
+            <div class="faq">
+              <div class="faq-item">
+                <h3>📌 How do I register as a library member?</h3>
+                <p class="muted">
+                  Visit the library and bring a valid ID. Additional requirements may apply depending on your category.
+                </p>
+              </div>
+
+              <div class="faq-item">
+                <h3>📚 How many books can I borrow?</h3>
+                <p class="muted">
+                  Borrowing limits depend on library policy. You may check the Policies page for updated guidelines.
+                </p>
+              </div>
+
+              <div class="faq-item">
+                <h3>⏳ Can I renew borrowed books?</h3>
+                <p class="muted">
+                  Yes, renewals are allowed unless the book is reserved by another user.
+                </p>
+              </div>
+
+              <div class="faq-item">
+                <h3>🖥️ Do you offer computer and internet access?</h3>
+                <p class="muted">
+                  Yes. Tech4Ed and computer literacy programs are available for students and community members.
+                </p>
+              </div>
+
+              <div class="faq-item">
+                <h3>📍 Where is the library located?</h3>
+                <p class="muted">
+                  Urdaneta City, Pangasinan. Please visit the Contact page for complete address and office hours.
+                </p>
+              </div>
+            </div>
+
+            <div class="contact-box">
+              <h3>Library Assistance</h3>
+              <p class="muted">
+                You may also visit us personally during office hours or contact the library through the Contact page.
+              </p>
+              <a href="/contact" class="link">Go to Contact Page →</a>
+            </div>
+          </div>
 </section>

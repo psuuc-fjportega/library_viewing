@@ -36,7 +36,7 @@
             </div>
 
             <div>
-              <span class="pill <%= i.status === 'resolved' ? 'pill-ok' : 'pill-new' %>">
+              <span class="badge <%= i.status === 'resolved' ? 'badge-green' : 'badge-wine' %>">
                 <%= i.status %>
               </span>
             </div>
@@ -46,7 +46,7 @@
             </div>
 
             <div>
-              <a class="btn btn-small" href="/admin/inquiries/<%= i._id %>">View</a>
+              <a class="btn btn-outline btn-sm" href="/admin/inquiries/<%= i._id %>">View</a>
             </div>
           </div>
           <% }) %>

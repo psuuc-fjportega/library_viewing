@@ -4,163 +4,160 @@
 </section>
 
 <section class="gallery-grid">
-  <% if (!images || images.length === 0) { %>
-    <p class="muted">No gallery images yet.</p>
-  <% } else { %>
-    <% images.forEach((img, idx) => { %>
-      <div class="gallery-item reveal">
-        <img
-          src="<%= img._thumbUrl %>"
-          data-full="<%= img._fullUrl %>"
-          data-caption="<%= img.caption %>"
-          alt="<%= img.caption %>"
-          loading="lazy"
-          decoding="async"
-          width="480"
-          height="320"
-          class="js-gallery-img"
-        />
+  <% if (!images || images.length===0) { %>
+    <div class="alert alert-info" style="margin:20px 0;">
+      <span class="alert-icon">📷</span> No gallery images have been added yet.
+    </div>
+    <% } else { %>
+      <% images.forEach((img, idx)=> { %>
+        <div class="gallery-item reveal">
+          <img src="<%= img._thumbUrl %>" data-full="<%= img._fullUrl %>" data-caption="<%= img.caption %>"
+            alt="<%= img.caption %>" loading="lazy" decoding="async" width="480" height="320" class="js-gallery-img" />
 
-        <div class="gallery-caption">
-          <%= img.caption %>
+          <div class="gallery-caption">
+            <%= img.caption %>
+          </div>
         </div>
-      </div>
-    <% }) %>
-  <% } %>
+        <% }) %>
+          <% } %>
 </section>
 
 <!-- Pagination -->
-<% if (totalPages > 1) { %>
+<% if (totalPages> 1) { %>
   <nav class="pagination" aria-label="Gallery pages">
-    <% if (currentPage > 1) { %>
+    <% if (currentPage> 1) { %>
       <a class="page-btn" href="/gallery?page=<%= currentPage - 1 %>" aria-label="Previous page">&#8592; Prev</a>
-    <% } else { %>
-      <span class="page-btn page-btn--disabled">&#8592; Prev</span>
-    <% } %>
-
-    <div class="page-numbers">
-      <% for (let p = 1; p <= totalPages; p++) { %>
-        <% if (p === currentPage) { %>
-          <span class="page-num page-num--active"><%= p %></span>
-        <% } else if (p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2)) { %>
-          <a class="page-num" href="/gallery?page=<%= p %>"><%= p %></a>
-        <% } else if (p === currentPage - 3 || p === currentPage + 3) { %>
-          <span class="page-ellipsis">…</span>
+      <% } else { %>
+        <span class="page-btn page-btn--disabled">&#8592; Prev</span>
         <% } %>
-      <% } %>
+
+          <div class="page-numbers">
+            <% for (let p=1; p <=totalPages; p++) { %>
+              <% if (p===currentPage) { %>
+                <span class="page-num page-num--active">
+                  <%= p %>
+                </span>
+                <% } else if (p===1 || p===totalPages || (p>= currentPage - 2 && p <= currentPage + 2)) { %>
+                    <a class="page-num" href="/gallery?page=<%= p %>">
+                      <%= p %>
+                    </a>
+                    <% } else if (p===currentPage - 3 || p===currentPage + 3) { %>
+                      <span class="page-ellipsis">…</span>
+                      <% } %>
+                        <% } %>
+          </div>
+
+          <% if (currentPage < totalPages) { %>
+            <a class="page-btn" href="/gallery?page=<%= currentPage + 1 %>" aria-label="Next page">Next &#8594;</a>
+            <% } else { %>
+              <span class="page-btn page-btn--disabled">Next &#8594;</span>
+              <% } %>
+  </nav>
+  <% } %>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" aria-hidden="true" style="display:none;">
+      <button class="lightbox-close" type="button" aria-label="Close">×</button>
+      <img class="lightbox-img" src="" alt="">
+      <div class="lightbox-caption"></div>
     </div>
 
-    <% if (currentPage < totalPages) { %>
-      <a class="page-btn" href="/gallery?page=<%= currentPage + 1 %>" aria-label="Next page">Next &#8594;</a>
-    <% } else { %>
-      <span class="page-btn page-btn--disabled">Next &#8594;</span>
-    <% } %>
-  </nav>
-<% } %>
+    <script>
+      (function () {
+        // Prevent double-init if you already have another lightbox in main.js
+        if (window.__UCPL_GALLERY_LIGHTBOX_INIT__) return;
+        window.__UCPL_GALLERY_LIGHTBOX_INIT__ = true;
 
-<!-- Lightbox -->
-<div class="lightbox" id="lightbox" aria-hidden="true" style="display:none;">
-  <button class="lightbox-close" type="button" aria-label="Close">×</button>
-  <img class="lightbox-img" src="" alt="">
-  <div class="lightbox-caption"></div>
-</div>
+        const lightbox = document.getElementById("lightbox");
+        if (!lightbox) return;
 
-<script>
-  (function () {
-    // Prevent double-init if you already have another lightbox in main.js
-    if (window.__UCPL_GALLERY_LIGHTBOX_INIT__) return;
-    window.__UCPL_GALLERY_LIGHTBOX_INIT__ = true;
+        const imgEl = lightbox.querySelector(".lightbox-img");
+        const captionEl = lightbox.querySelector(".lightbox-caption");
+        const closeBtn = lightbox.querySelector(".lightbox-close");
 
-    const lightbox = document.getElementById("lightbox");
-    if (!lightbox) return;
+        const thumbs = Array.from(document.querySelectorAll(".js-gallery-img"));
+        if (!thumbs.length) return;
 
-    const imgEl = lightbox.querySelector(".lightbox-img");
-    const captionEl = lightbox.querySelector(".lightbox-caption");
-    const closeBtn = lightbox.querySelector(".lightbox-close");
+        let currentIndex = -1;
 
-    const thumbs = Array.from(document.querySelectorAll(".js-gallery-img"));
-    if (!thumbs.length) return;
+        // Make thumbnails clickable + keyboard accessible
+        thumbs.forEach((t) => {
+          t.style.cursor = "pointer";
+          t.setAttribute("tabindex", "0");
+        });
 
-    let currentIndex = -1;
-
-    // Make thumbnails clickable + keyboard accessible
-    thumbs.forEach((t) => {
-      t.style.cursor = "pointer";
-      t.setAttribute("tabindex", "0");
-    });
-
-    function getFullUrl(i) {
-      const t = thumbs[i];
-      return (t && (t.getAttribute("data-full") || t.src)) || "";
-    }
-
-    function getCaption(i) {
-      const t = thumbs[i];
-      return (t && (t.getAttribute("data-caption") || t.alt || "")) || "";
-    }
-
-    function preload(i) {
-      const url = getFullUrl(i);
-      if (!url) return;
-      const im = new Image();
-      im.src = url;
-    }
-
-    function openAt(i) {
-      if (!thumbs.length) return;
-
-      currentIndex = i;
-      if (currentIndex < 0) currentIndex = thumbs.length - 1;
-      if (currentIndex >= thumbs.length) currentIndex = 0;
-
-      const full = getFullUrl(currentIndex);
-      imgEl.src = full;
-      imgEl.alt = getCaption(currentIndex);
-      captionEl.textContent = getCaption(currentIndex);
-
-      lightbox.style.display = "flex";
-      lightbox.setAttribute("aria-hidden", "false");
-      document.body.style.overflow = "hidden";
-
-      // Preload neighbors for faster arrow navigation
-      preload((currentIndex + 1) % thumbs.length);
-      preload((currentIndex - 1 + thumbs.length) % thumbs.length);
-    }
-
-    function close() {
-      lightbox.style.display = "none";
-      lightbox.setAttribute("aria-hidden", "true");
-      document.body.style.overflow = "";
-      imgEl.src = "";
-    }
-
-    // Click thumb to open
-    thumbs.forEach((t, idx) => {
-      t.addEventListener("click", () => openAt(idx));
-      t.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          openAt(idx);
+        function getFullUrl(i) {
+          const t = thumbs[i];
+          return (t && (t.getAttribute("data-full") || t.src)) || "";
         }
-      });
-    });
 
-    // Close button
-    if (closeBtn) closeBtn.addEventListener("click", close);
+        function getCaption(i) {
+          const t = thumbs[i];
+          return (t && (t.getAttribute("data-caption") || t.alt || "")) || "";
+        }
 
-    // Click outside image closes (only if clicking the overlay itself)
-    lightbox.addEventListener("click", (e) => {
-      if (e.target === lightbox) close();
-    });
+        function preload(i) {
+          const url = getFullUrl(i);
+          if (!url) return;
+          const im = new Image();
+          im.src = url;
+        }
 
-    // Keyboard controls
-    document.addEventListener("keydown", (e) => {
-      const open = lightbox.getAttribute("aria-hidden") === "false";
-      if (!open) return;
+        function openAt(i) {
+          if (!thumbs.length) return;
 
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowRight") openAt(currentIndex + 1);
-      if (e.key === "ArrowLeft") openAt(currentIndex - 1);
-    });
-  })();
-</script>
+          currentIndex = i;
+          if (currentIndex < 0) currentIndex = thumbs.length - 1;
+          if (currentIndex >= thumbs.length) currentIndex = 0;
+
+          const full = getFullUrl(currentIndex);
+          imgEl.src = full;
+          imgEl.alt = getCaption(currentIndex);
+          captionEl.textContent = getCaption(currentIndex);
+
+          lightbox.style.display = "flex";
+          lightbox.setAttribute("aria-hidden", "false");
+          document.body.style.overflow = "hidden";
+
+          // Preload neighbors for faster arrow navigation
+          preload((currentIndex + 1) % thumbs.length);
+          preload((currentIndex - 1 + thumbs.length) % thumbs.length);
+        }
+
+        function close() {
+          lightbox.style.display = "none";
+          lightbox.setAttribute("aria-hidden", "true");
+          document.body.style.overflow = "";
+          imgEl.src = "";
+        }
+
+        // Click thumb to open
+        thumbs.forEach((t, idx) => {
+          t.addEventListener("click", () => openAt(idx));
+          t.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openAt(idx);
+            }
+          });
+        });
+
+        // Close button
+        if (closeBtn) closeBtn.addEventListener("click", close);
+
+        // Click outside image closes (only if clicking the overlay itself)
+        lightbox.addEventListener("click", (e) => {
+          if (e.target === lightbox) close();
+        });
+
+        // Keyboard controls
+        document.addEventListener("keydown", (e) => {
+          const open = lightbox.getAttribute("aria-hidden") === "false";
+          if (!open) return;
+
+          if (e.key === "Escape") close();
+          if (e.key === "ArrowRight") openAt(currentIndex + 1);
+          if (e.key === "ArrowLeft") openAt(currentIndex - 1);
+        });
+      })();
+    </script>

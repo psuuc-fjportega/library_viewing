@@ -4,93 +4,90 @@
 </section>
 
 <div style="display:flex; gap:10px; margin-bottom:16px;">
-  <a href="/admin/inquiries" class="btn btn-outline btn-small">← Back to Inquiries</a>
+  <a href="/admin/inquiries" class="btn btn-outline btn-sm">← Back to Inquiries</a>
 </div>
 
 <section class="card">
   <h2 style="margin-bottom:10px;">Upload Images</h2>
 
   <form action="/admin/gallery/upload" method="POST" enctype="multipart/form-data" class="form">
-    <label>Select images (multiple)</label>
-    <input type="file" name="images" accept="image/*" multiple required />
+    <div class="form-group">
+      <label class="form-label">Select images (multiple)</label>
+      <input type="file" name="images" accept="image/*" multiple required />
+      <p class="form-hint">You can select many images in one upload.</p>
+    </div>
     <button class="btn btn-primary" type="submit">Upload</button>
-    <p class="muted" style="margin:0;">Tip: You can select many images in one upload.</p>
   </form>
 </section>
 
 <section class="card" style="margin-top:16px;">
   <h2 style="margin-bottom:10px;">
     Uploaded Images
-    <% if (typeof totalPages !== 'undefined' && totalPages > 0) { %>
+    <% if (typeof totalPages !=='undefined' && totalPages> 0) { %>
       <span style="font-size:0.85rem; font-weight:normal; color:var(--muted);">
         (Page <%= currentPage %> of <%= totalPages %>)
       </span>
-    <% } %>
+      <% } %>
   </h2>
 
-  <% if (!images || images.length === 0) { %>
+  <% if (!images || images.length===0) { %>
     <p class="muted">No images uploaded yet.</p>
-  <% } else { %>
-    <div class="gallery-grid">
-      <% images.forEach(img => { %>
-        <%
-          const src =
-            img.url ||
-            (img.filename ? ("/assets/gallery/uploads/" + img.filename) : "");
-        %>
+    <% } else { %>
+      <div class="gallery-grid">
+        <% images.forEach(img=> { %>
+          <% const src=img.url || (img.filename ? ("/assets/gallery/uploads/" + img.filename) : "" ); %>
 
-        <div class="gallery-item">
-          <% if (src) { %>
-            <img
-              src="<%= src %>"
-              alt="<%= img.caption %>"
-              onerror="this.outerHTML='<div class=&quot;muted&quot; style=&quot;padding:12px;&quot;>Image failed to load</div>'"
-            >
-          <% } else { %>
-            <div class="muted" style="padding:12px;">No image source</div>
-          <% } %>
+            <div class="gallery-item">
+              <% if (src) { %>
+                <img src="<%= src %>" alt="<%= img.caption %>"
+                  onerror="this.outerHTML='<div class=&quot;muted&quot; style=&quot;padding:12px;&quot;>Image failed to load</div>'">
+                <% } else { %>
+                  <div class="muted" style="padding:12px;">No image source</div>
+                  <% } %>
 
-          <div class="gallery-caption"><%= img.caption %></div>
+                    <div class="gallery-caption">
+                      <%= img.caption %>
+                    </div>
 
-          <form
-            action="/admin/gallery/<%= img._id %>/delete"
-            method="POST"
-            style="position:absolute; top:10px; right:10px;"
-            onsubmit="return confirm('Delete this image?');"
-          >
-            <button class="btn btn-danger btn-small" type="submit">Delete</button>
-          </form>
-        </div>
-      <% }) %>
-    </div>
-  <% } %>
+                    <form action="/admin/gallery/<%= img._id %>/delete" method="POST"
+                      style="position:absolute; top:10px; right:10px;" onsubmit="return confirm('Delete this image?');">
+                      <button class="btn btn-danger btn-sm" type="submit">Delete</button>
+                    </form>
+            </div>
+            <% }) %>
+      </div>
+      <% } %>
 </section>
 
 <!-- Pagination -->
-<% if (totalPages > 1) { %>
+<% if (totalPages> 1) { %>
   <nav class="pagination" aria-label="Gallery admin pages">
-    <% if (currentPage > 1) { %>
+    <% if (currentPage> 1) { %>
       <a class="page-btn" href="/admin/gallery?page=<%= currentPage - 1 %>">&#8592; Prev</a>
-    <% } else { %>
-      <span class="page-btn page-btn--disabled">&#8592; Prev</span>
-    <% } %>
-
-    <div class="page-numbers">
-      <% for (let p = 1; p <= totalPages; p++) { %>
-        <% if (p === currentPage) { %>
-          <span class="page-num page-num--active"><%= p %></span>
-        <% } else if (p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2)) { %>
-          <a class="page-num" href="/admin/gallery?page=<%= p %>"><%= p %></a>
-        <% } else if (p === currentPage - 3 || p === currentPage + 3) { %>
-          <span class="page-ellipsis">…</span>
+      <% } else { %>
+        <span class="page-btn page-btn--disabled">&#8592; Prev</span>
         <% } %>
-      <% } %>
-    </div>
 
-    <% if (currentPage < totalPages) { %>
-      <a class="page-btn" href="/admin/gallery?page=<%= currentPage + 1 %>">Next &#8594;</a>
-    <% } else { %>
-      <span class="page-btn page-btn--disabled">Next &#8594;</span>
-    <% } %>
+          <div class="page-numbers">
+            <% for (let p=1; p <=totalPages; p++) { %>
+              <% if (p===currentPage) { %>
+                <span class="page-num page-num--active">
+                  <%= p %>
+                </span>
+                <% } else if (p===1 || p===totalPages || (p>= currentPage - 2 && p <= currentPage + 2)) { %>
+                    <a class="page-num" href="/admin/gallery?page=<%= p %>">
+                      <%= p %>
+                    </a>
+                    <% } else if (p===currentPage - 3 || p===currentPage + 3) { %>
+                      <span class="page-ellipsis">…</span>
+                      <% } %>
+                        <% } %>
+          </div>
+
+          <% if (currentPage < totalPages) { %>
+            <a class="page-btn" href="/admin/gallery?page=<%= currentPage + 1 %>">Next &#8594;</a>
+            <% } else { %>
+              <span class="page-btn page-btn--disabled">Next &#8594;</span>
+              <% } %>
   </nav>
-<% } %>
+  <% } %>
