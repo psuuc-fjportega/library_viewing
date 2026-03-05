@@ -34,11 +34,9 @@
                 <input type="text" name="botCheck" id="botCheck" tabindex="-1">
               </div>
 
-              <!-- Timing check -->
-              <input type="hidden" name="formStartTime" id="formStartTime" value="">
-              <script>
-                document.getElementById('formStartTime').value = Date.now();
-              </script>
+              <!-- Anti-Spam Token -->
+              <input type="hidden" name="askFormToken"
+                value="<%= typeof askFormToken !== 'undefined' ? askFormToken : '' %>">
 
               <div class="form-group">
                 <label class="form-label">Full Name</label>

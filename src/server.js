@@ -16,6 +16,7 @@ const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
 const expressMongoSanitize = require("express-mongo-sanitize");
 const xssClean = require("xss-clean");
+const crypto = require("crypto");
 
 const Inquiry = require("./models/Inquiry");
 const Brc = require("./models/Brc"); // BRC Model
@@ -115,9 +116,14 @@ const adminLoginLimiter = rateLimit({
 });
 
 const askLibrarianLimiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour
-  max: 5, // Limit each IP to 5 requests per hour
-  message: "Too many inquiries from this IP, please try again after an hour"
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 5, // Limit each IP to 5 requests per window
+  handler: (req, res) => {
+    return res.status(429).render("pages/ask", {
+      title: "Ask a Librarian",
+      error: "Too many inquiries from this IP. Please try again after 10 minutes."
+    });
+  }
 });
 
 // Static files
@@ -312,31 +318,69 @@ app.get("/policies", (req, res) => {
 
 // Ask a Librarian (GET)
 app.get("/ask-a-librarian", (req, res) => {
-  res.render("pages/ask", { title: "Ask a Librarian" });
+  // Generate token and issuedAt for timing/CSRF check
+  const token = crypto.randomBytes(16).toString("hex");
+  req.session.askFormToken = token;
+  req.session.askFormIssuedAt = Date.now();
+
+  res.render("pages/ask", {
+    title: "Ask a Librarian",
+    askFormToken: token
+  });
 });
 
 // Ask a Librarian (POST) - SAVE TO DB + OPTIONAL EMAIL
 app.post("/ask-a-librarian", askLibrarianLimiter, async (req, res) => {
-  const { name, email, category, message, botCheck, formStartTime } = req.body;
+  let { name, email, category, message, botCheck, askFormToken } = req.body;
 
-  // Honeypot check
+  // 1. Honeypot check
   if (botCheck) {
-    return res.status(400).send("Spam detected.");
+    console.warn(`[Anti-Spam] Honeypot filled by IP: ${req.ip}`);
+    return res.render("pages/ask", { title: "Ask a Librarian", success: true });
   }
 
-  // Timing check: if form is submitted in under 3 seconds, likely a bot
-  if (formStartTime) {
-    const elapsed = Date.now() - parseInt(formStartTime, 10);
-    if (elapsed < 3000) {
-      return res.status(400).send("Form submitted too quickly. Please try again.");
-    }
+  // 2. Token & Timing validation
+  const sessionToken = req.session.askFormToken;
+  const sessionIssuedAt = req.session.askFormIssuedAt;
+
+  // Clear session tokens to prevent replay
+  req.session.askFormToken = null;
+  req.session.askFormIssuedAt = null;
+
+  if (!sessionToken || !askFormToken || sessionToken !== askFormToken) {
+    console.warn(`[Anti-Spam] Invalid or missing token from IP: ${req.ip}`);
+    return res.render("pages/ask", { title: "Ask a Librarian", success: true });
   }
 
+  if (!sessionIssuedAt || (Date.now() - sessionIssuedAt < 3000)) {
+    console.warn(`[Anti-Spam] Form submitted too quickly by IP: ${req.ip}`);
+    return res.render("pages/ask", { title: "Ask a Librarian", success: true });
+  }
+
+  // 3. Validation & Sanitization
   if (!name || !email || !category || !message) {
-    return res.render("pages/ask", {
-      title: "Ask a Librarian",
-      error: "Please complete all fields.",
-    });
+    return res.render("pages/ask", { title: "Ask a Librarian", error: "Please complete all fields." });
+  }
+
+  name = name.trim().replace(/\s+/g, ' ');
+  if (name.length < 2 || name.length > 80) {
+    return res.render("pages/ask", { title: "Ask a Librarian", error: "Name must be between 2 and 80 characters." });
+  }
+
+  email = email.trim().toLowerCase();
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email) || email.length > 120) {
+    return res.render("pages/ask", { title: "Ask a Librarian", error: "Please provide a valid email address." });
+  }
+
+  const allowedCategories = ["Book Inquiry", "Research Assistance", "Library Membership", "Programs & Events", "Tech4Ed / Computer Use", "Other"];
+  if (!allowedCategories.includes(category)) {
+    return res.render("pages/ask", { title: "Ask a Librarian", error: "Please select a valid category." });
+  }
+
+  message = message.trim().replace(/\s+/g, ' ').replace(/<[^>]+>/g, ''); // strip HTML
+  if (message.length < 10 || message.length > 2000) {
+    return res.render("pages/ask", { title: "Ask a Librarian", error: "Message must be between 10 and 2000 characters." });
   }
 
   try {
