@@ -1,6 +1,20 @@
 const multer = require("multer");
 const GalleryImage = require("./models/GalleryImage");
 require("dotenv").config();
+// Keep the dev server alive on transient Mongo/DNS failures
+process.on("unhandledRejection", (reason) => {
+  console.error("❌ Unhandled promise rejection:", reason);
+});
+process.on("uncaughtException", (err) => {
+  console.error("❌ Uncaught exception:", err);
+});
+console.log("--- ENV DIAGNOSTIC ---");
+console.log("Current Directory:", process.cwd());
+console.log(
+  "Is MONGODB_URI|MONGO_URI defined?:",
+  !!(process.env.MONGODB_URI || process.env.MONGO_URI),
+);
+console.log("----------------------");
 const compression = require("compression");
 
 const fs = require("fs");
@@ -10,7 +24,10 @@ const expressLayouts = require("express-ejs-layouts");
 const mongoose = require("mongoose");
 const nodemailer = require("nodemailer");
 const session = require("express-session");
-const MongoStore = require("connect-mongo").default || require("connect-mongo").MongoStore || require("connect-mongo");
+const MongoStore =
+  require("connect-mongo").default ||
+  require("connect-mongo").MongoStore ||
+  require("connect-mongo");
 const bcrypt = require("bcryptjs");
 const rateLimit = require("express-rate-limit");
 const helmet = require("helmet");
@@ -37,7 +54,7 @@ function cldThumb(publicId) {
     transformation: [
       { width: 480, height: 320, crop: "fill", gravity: "auto" },
       { fetch_format: "auto", quality: "auto" },
-      { dpr: "auto" }
+      { dpr: "auto" },
     ],
   });
 }
@@ -49,7 +66,7 @@ function cldFull(publicId) {
     transformation: [
       { width: 1600, crop: "limit" },
       { fetch_format: "auto", quality: "auto" },
-      { dpr: "auto" }
+      { dpr: "auto" },
     ],
   });
 }
@@ -65,7 +82,7 @@ function uploadBufferToCloudinary(buffer, folder) {
       (error, result) => {
         if (error) return reject(error);
         resolve(result); // { secure_url, public_id, ... }
-      }
+      },
     );
 
     stream.end(buffer);
@@ -78,7 +95,7 @@ const app = express();
 // MIDDLEWARE
 // --------------------
 // Trus proxy for correct IP identification behind Render
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -87,22 +104,40 @@ app.use(express.json());
 app.use(expressMongoSanitize());
 app.use(xssClean());
 
-const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
+const hasMongoConfigured = !!MONGODB_URI;
+let mongoReady = false;
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "dev_secret_change_me",
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: MONGODB_URI }),
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 2 // 2 hours
-    }
-  })
-);
+const sessionOptions = {
+  secret: process.env.SESSION_SECRET || "dev_secret_change_me",
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 2, // 2 hours
+  },
+};
+
+// Use Mongo-backed sessions when DB is configured; otherwise fall back to MemoryStore
+// so the website can still boot in local/dev without Mongo.
+if (hasMongoConfigured) {
+  try {
+    sessionOptions.store = MongoStore.create({ mongoUrl: MONGODB_URI });
+  } catch (e) {
+    console.warn(
+      "⚠️  Failed to initialize Mongo session store; using in-memory sessions.",
+      e?.message || e,
+    );
+  }
+} else {
+  console.warn(
+    "⚠️  No MONGODB_URI/MONGO_URI found. Using in-memory sessions (dev-only).",
+  );
+}
+
+app.use(session(sessionOptions));
 
 // Secure headers
 app.use(helmet({ contentSecurityPolicy: false }));
@@ -112,7 +147,8 @@ app.use(compression());
 const adminLoginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // Limit each IP to 5 requests per `window` (here, per 15 minutes)
-  message: "Too many login attempts from this IP, please try again after 15 minutes"
+  message:
+    "Too many login attempts from this IP, please try again after 15 minutes",
 });
 
 const askLibrarianLimiter = rateLimit({
@@ -121,23 +157,31 @@ const askLibrarianLimiter = rateLimit({
   handler: (req, res) => {
     return res.status(429).render("pages/ask", {
       title: "Ask a Librarian",
-      error: "Too many inquiries from this IP. Please try again after 10 minutes."
+      error:
+        "Too many inquiries from this IP. Please try again after 10 minutes.",
     });
-  }
+  },
 });
 
 // Static files
-app.use(express.static(path.join(__dirname, "../public"), {
-  maxAge: "1d",
-  etag: true,
-  lastModified: true,
-}));
+app.use(
+  express.static(path.join(__dirname, "../public"), {
+    // Avoid stale assets during local development (e.g., landing-bg.jpg changes)
+    maxAge: process.env.NODE_ENV === "production" ? "1d" : 0,
+    etag: true,
+    lastModified: true,
+  }),
+);
 
-const galleryUploadDir = path.join(__dirname, "../public/assets/gallery/uploads");
+const galleryUploadDir = path.join(
+  __dirname,
+  "../public/assets/gallery/uploads",
+);
 
 // ensure folder exists
 
-if (!fs.existsSync(galleryUploadDir)) fs.mkdirSync(galleryUploadDir, { recursive: true });
+if (!fs.existsSync(galleryUploadDir))
+  fs.mkdirSync(galleryUploadDir, { recursive: true });
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, galleryUploadDir),
@@ -145,7 +189,7 @@ const storage = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const safeName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
     cb(null, safeName);
-  }
+  },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -157,12 +201,13 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 15 * 1024 * 1024 } // 15mb per image
+  limits: { fileSize: 15 * 1024 * 1024 }, // 15mb per image
 });
 
 // BRC Multer Setup
 const brcUploadDir = path.join(__dirname, "../public/assets/brc/uploads");
-if (!fs.existsSync(brcUploadDir)) fs.mkdirSync(brcUploadDir, { recursive: true });
+if (!fs.existsSync(brcUploadDir))
+  fs.mkdirSync(brcUploadDir, { recursive: true });
 
 const brcStorage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, brcUploadDir),
@@ -170,7 +215,7 @@ const brcStorage = multer.diskStorage({
     const ext = path.extname(file.originalname).toLowerCase();
     const safeName = `brc-${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
     cb(null, safeName);
-  }
+  },
 });
 
 const uploadBrc = multer({
@@ -185,7 +230,6 @@ const uploadGallery = multer({
   limits: { fileSize: 15 * 1024 * 1024 },
 });
 
-
 // View engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "../views"));
@@ -197,15 +241,33 @@ app.set("layout", "layouts/main");
 // --------------------
 // MONGODB CONNECT
 // --------------------
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err.message));
+if (hasMongoConfigured) {
+  mongoose
+    .connect(MONGODB_URI)
+    .then(() => {
+      mongoReady = true;
+      console.log("✅ MongoDB connected");
+    })
+    .catch((err) => {
+      mongoReady = false;
+      console.error("❌ MongoDB connection error:", err.message);
+      console.warn(
+        "⚠️  Continuing without MongoDB. Check Atlas network access / DNS, or use the non-SRV connection string.",
+      );
+    });
+} else {
+  console.warn(
+    "⚠️  MongoDB is not configured. DB-backed pages (gallery/admin/BRC/ask) will be limited.",
+  );
+}
+
+function isMongoReady() {
+  return mongoReady && mongoose.connection.readyState === 1;
+}
 
 // --------------------
 // ROUTES
 // --------------------
-
 
 function requireAdmin(req, res, next) {
   if (req.session && req.session.isAdmin) return next();
@@ -221,9 +283,50 @@ app.get("/history", (req, res) => {
   res.render("pages/history", { title: "History" });
 });
 
-// Collections
 app.get("/collections", (req, res) => {
   res.render("pages/collections", { title: "Collections" });
+});
+
+// Fiction (types)
+app.get("/fiction/literary", (req, res) => {
+  res.render("pages/fiction-type", {
+    title: "Literary Fiction",
+    type: "literary",
+    typeTitle: "Literary Fiction",
+    typeDescription:
+      "Emphasizes style, character, and theme over plot. Often more focused on meaning and literary craft.",
+    typeBody:
+      "Literary fiction is a category of novels that prioritize writing quality, deep character development, and thematic exploration. Instead of relying primarily on action-driven plot, these stories often encourage readers to reflect on ideas, emotions, and human experience.",
+  });
+});
+
+app.get("/fiction/genre", (req, res) => {
+  res.render("pages/fiction-type", {
+    title: "Genre Fiction",
+    type: "genre",
+    typeTitle: "Genre Fiction",
+    typeDescription:
+      "Written to fit into a specific genre—so readers know what to expect.",
+    typeBody:
+      "Genre fiction (also known as popular fiction) is written with a clear genre identity—like mystery, romance, science fiction, fantasy, or crime thrillers. Authors often follow genre conventions while still offering fresh characters and compelling storytelling.",
+  });
+});
+
+app.get("/fiction/mainstream", (req, res) => {
+  res.render("pages/fiction-type", {
+    title: "Mainstream Fiction",
+    type: "mainstream",
+    typeTitle: "Mainstream Fiction",
+    typeDescription:
+      "When a literary or genre novel becomes widely popular with a larger audience.",
+    typeBody:
+      "Mainstream fiction describes novels that break out beyond a smaller core audience. When a book gains widespread attention—often becoming a bestseller—it draws new readers and enters broader conversations in culture and media.",
+  });
+});
+
+// Legacy: keep old link from collections page working
+app.get("/collections/fiction", (req, res) => {
+  res.render("pages/fiction", { title: "Fiction" });
 });
 
 // Programs list page (loads from JSON)
@@ -231,7 +334,7 @@ app.get("/programs", (req, res) => {
   try {
     const raw = fs.readFileSync(
       path.join(__dirname, "../data/programs.json"),
-      "utf-8"
+      "utf-8",
     );
     const data = JSON.parse(raw);
 
@@ -253,7 +356,7 @@ app.get("/programs/:slug", (req, res) => {
   try {
     const raw = fs.readFileSync(
       path.join(__dirname, "../data/programs.json"),
-      "utf-8"
+      "utf-8",
     );
 
     const data = JSON.parse(raw);
@@ -276,6 +379,15 @@ app.get("/programs/:slug", (req, res) => {
 
 // Gallery (paginated – 20 per page)
 app.get("/gallery", async (req, res) => {
+  if (!isMongoReady()) {
+    return res.render("pages/gallery", {
+      title: "Gallery",
+      images: [],
+      currentPage: 1,
+      totalPages: 1,
+    });
+  }
+
   const LIMIT = 20;
   const page = Math.max(1, parseInt(req.query.page) || 1);
 
@@ -325,7 +437,7 @@ app.get("/ask-a-librarian", (req, res) => {
 
   res.render("pages/ask", {
     title: "Ask a Librarian",
-    askFormToken: token
+    askFormToken: token,
   });
 });
 
@@ -352,38 +464,71 @@ app.post("/ask-a-librarian", askLibrarianLimiter, async (req, res) => {
     return res.render("pages/ask", { title: "Ask a Librarian", success: true });
   }
 
-  if (!sessionIssuedAt || (Date.now() - sessionIssuedAt < 3000)) {
+  if (!sessionIssuedAt || Date.now() - sessionIssuedAt < 3000) {
     console.warn(`[Anti-Spam] Form submitted too quickly by IP: ${req.ip}`);
     return res.render("pages/ask", { title: "Ask a Librarian", success: true });
   }
 
   // 3. Validation & Sanitization
   if (!name || !email || !category || !message) {
-    return res.render("pages/ask", { title: "Ask a Librarian", error: "Please complete all fields." });
+    return res.render("pages/ask", {
+      title: "Ask a Librarian",
+      error: "Please complete all fields.",
+    });
   }
 
-  name = name.trim().replace(/\s+/g, ' ');
+  name = name.trim().replace(/\s+/g, " ");
   if (name.length < 2 || name.length > 80) {
-    return res.render("pages/ask", { title: "Ask a Librarian", error: "Name must be between 2 and 80 characters." });
+    return res.render("pages/ask", {
+      title: "Ask a Librarian",
+      error: "Name must be between 2 and 80 characters.",
+    });
   }
 
   email = email.trim().toLowerCase();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email) || email.length > 120) {
-    return res.render("pages/ask", { title: "Ask a Librarian", error: "Please provide a valid email address." });
+    return res.render("pages/ask", {
+      title: "Ask a Librarian",
+      error: "Please provide a valid email address.",
+    });
   }
 
-  const allowedCategories = ["Book Inquiry", "Research Assistance", "Library Membership", "Programs & Events", "Tech4Ed / Computer Use", "Other"];
+  const allowedCategories = [
+    "Book Inquiry",
+    "Research Assistance",
+    "Library Membership",
+    "Programs & Events",
+    "Tech4Ed / Computer Use",
+    "Other",
+  ];
   if (!allowedCategories.includes(category)) {
-    return res.render("pages/ask", { title: "Ask a Librarian", error: "Please select a valid category." });
+    return res.render("pages/ask", {
+      title: "Ask a Librarian",
+      error: "Please select a valid category.",
+    });
   }
 
-  message = message.trim().replace(/\s+/g, ' ').replace(/<[^>]+>/g, ''); // strip HTML
+  message = message
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/<[^>]+>/g, ""); // strip HTML
   if (message.length < 10 || message.length > 2000) {
-    return res.render("pages/ask", { title: "Ask a Librarian", error: "Message must be between 10 and 2000 characters." });
+    return res.render("pages/ask", {
+      title: "Ask a Librarian",
+      error: "Message must be between 10 and 2000 characters.",
+    });
   }
 
   try {
+    if (!isMongoReady()) {
+      return res.render("pages/ask", {
+        title: "Ask a Librarian",
+        error:
+          "This form is temporarily unavailable because the database is not configured.",
+      });
+    }
+
     // ✅ Save to MongoDB
     const saved = await Inquiry.create({ name, email, category, message });
 
@@ -461,6 +606,8 @@ app.get("/contact", (req, res) => {
 
 // Admin: list (paginated – 15 per page)
 app.get("/admin/inquiries", requireAdmin, async (req, res) => {
+  if (!isMongoReady()) return res.status(503).send("Database not configured.");
+
   const LIMIT = 15;
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const total = await Inquiry.countDocuments();
@@ -480,8 +627,11 @@ app.get("/admin/inquiries", requireAdmin, async (req, res) => {
 
 // Admin: view single
 app.get("/admin/inquiries/:id", requireAdmin, async (req, res) => {
+  if (!isMongoReady()) return res.status(503).send("Database not configured.");
+
   const inquiry = await Inquiry.findById(req.params.id);
-  if (!inquiry) return res.status(404).render("pages/404", { title: "Not Found" });
+  if (!inquiry)
+    return res.status(404).render("pages/404", { title: "Not Found" });
 
   res.render("pages/admin-inquiry-view", {
     title: `Inquiry — ${inquiry.name}`,
@@ -493,10 +643,13 @@ app.get("/admin/inquiries/:id", requireAdmin, async (req, res) => {
 // Admin: resolve
 app.post("/admin/inquiries/:id/resolve", requireAdmin, async (req, res) => {
   try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
     const updated = await Inquiry.findByIdAndUpdate(
       req.params.id,
       { $set: { status: "resolved" } },
-      { new: true }
+      { new: true },
     );
 
     if (!updated) {
@@ -513,6 +666,9 @@ app.post("/admin/inquiries/:id/resolve", requireAdmin, async (req, res) => {
 // Admin: delete
 app.post("/admin/inquiries/:id/delete", requireAdmin, async (req, res) => {
   try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
     await Inquiry.findByIdAndDelete(req.params.id);
     res.redirect("/admin/inquiries");
   } catch (e) {
@@ -531,9 +687,11 @@ app.get("/admin/login", (req, res) => {
 
 //admin fix status
 app.get("/admin/fix-status", requireAdmin, async (req, res) => {
+  if (!isMongoReady()) return res.status(503).send("Database not configured.");
+
   await Inquiry.updateMany(
     { status: { $exists: false } },
-    { $set: { status: "new" } }
+    { $set: { status: "new" } },
   );
   res.send("✅ Fixed missing status field");
 });
@@ -548,7 +706,7 @@ app.post("/admin/login", adminLoginLimiter, (req, res) => {
   if (username === validUsername) {
     let isValid = false;
 
-    // Backward compatibility: If no hash is set in .env, fallback to plain text ADMIN_PASSWORD check 
+    // Backward compatibility: If no hash is set in .env, fallback to plain text ADMIN_PASSWORD check
     // BUT we strongly encourage setting ADMIN_PASSWORD_HASH in Render.
     if (validPasswordHash) {
       isValid = bcrypt.compareSync(password, validPasswordHash);
@@ -564,7 +722,7 @@ app.post("/admin/login", adminLoginLimiter, (req, res) => {
 
   return res.render("pages/admin-login", {
     title: "Admin Login",
-    error: "Incorrect username or password."
+    error: "Incorrect username or password.",
   });
 });
 
@@ -576,6 +734,8 @@ app.post("/admin/logout", (req, res) => {
 });
 // Admin Gallery (view + upload, paginated – 15 per page)
 app.get("/admin/gallery", requireAdmin, async (req, res) => {
+  if (!isMongoReady()) return res.status(503).send("Database not configured.");
+
   const LIMIT = 15;
   const page = Math.max(1, parseInt(req.query.page) || 1);
   const total = await GalleryImage.countDocuments();
@@ -600,6 +760,9 @@ app.post(
   uploadGallery.array("images", 20),
   async (req, res) => {
     try {
+      if (!isMongoReady())
+        return res.status(503).send("Database not configured.");
+
       if (!req.files || req.files.length === 0) {
         return res.status(400).send("No images received.");
       }
@@ -622,18 +785,21 @@ app.post(
       console.error("Gallery upload error:", err);
       return res.status(500).send("Upload failed.");
     }
-  }
+  },
 );
 
 // Optional: delete image
 app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
   try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
     const img = await GalleryImage.findById(req.params.id);
     if (!img) return res.redirect("/admin/gallery");
 
     // ✅ If Cloudinary
     if (img.publicId) {
-      await cloudinary.uploader.destroy(img.publicId).catch(() => { });
+      await cloudinary.uploader.destroy(img.publicId).catch(() => {});
     }
 
     // ✅ Backward-compatible: if local filename exists, attempt delete
@@ -657,6 +823,9 @@ app.post("/admin/gallery/:id/delete", requireAdmin, async (req, res) => {
 // List BRCs
 app.get("/admin/brc", requireAdmin, async (req, res) => {
   try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
     const brcs = await Brc.find().sort({ createdAt: -1 });
     res.render("pages/admin-brc", {
       title: "Admin — BRC",
@@ -688,6 +857,9 @@ app.post(
   ]),
   async (req, res) => {
     try {
+      if (!isMongoReady())
+        return res.status(503).send("Database not configured.");
+
       const { name, statement } = req.body;
 
       let coverUrl = "";
@@ -699,7 +871,7 @@ app.post(
       if (req.files?.coverImage?.[0]) {
         const r = await uploadBufferToCloudinary(
           req.files.coverImage[0].buffer,
-          "ucpl/brc/covers"
+          "ucpl/brc/covers",
         );
         coverUrl = r.secure_url;
         coverPublicId = r.public_id;
@@ -734,12 +906,15 @@ app.post(
       console.error("Error adding BRC:", err);
       return res.status(500).send("Error adding BRC. Please try again.");
     }
-  }
+  },
 );
 
 // Edit BRC Form (GET)
 app.get("/admin/brc/:id/edit", requireAdmin, async (req, res) => {
   try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
     const brc = await Brc.findById(req.params.id);
     if (!brc) return res.redirect("/admin/brc");
 
@@ -764,6 +939,9 @@ app.post(
   ]),
   async (req, res) => {
     try {
+      if (!isMongoReady())
+        return res.status(503).send("Database not configured.");
+
       const brc = await Brc.findById(req.params.id);
       if (!brc) return res.redirect("/admin/brc");
 
@@ -777,12 +955,12 @@ app.post(
       if (req.files?.coverImage?.[0]) {
         // delete old cover from Cloudinary
         if (brc.coverPublicId) {
-          await cloudinary.uploader.destroy(brc.coverPublicId).catch(() => { });
+          await cloudinary.uploader.destroy(brc.coverPublicId).catch(() => {});
         }
 
         const r = await uploadBufferToCloudinary(
           req.files.coverImage[0].buffer,
-          "ucpl/brc/covers"
+          "ucpl/brc/covers",
         );
         brc.coverUrl = r.secure_url;
         brc.coverPublicId = r.public_id;
@@ -806,7 +984,7 @@ app.post(
 
         // delete from cloudinary
         for (const pid of toRemove) {
-          await cloudinary.uploader.destroy(pid).catch(() => { });
+          await cloudinary.uploader.destroy(pid).catch(() => {});
         }
 
         // remove from arrays
@@ -828,12 +1006,15 @@ app.post(
       console.error("Error updating BRC:", err);
       return res.status(500).send("Error updating BRC.");
     }
-  }
+  },
 );
 
 // Delete BRC
 app.post("/admin/brc/:id/delete", requireAdmin, async (req, res) => {
   try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
     const brc = await Brc.findById(req.params.id);
     if (!brc) return res.redirect("/admin/brc");
 
@@ -845,7 +1026,7 @@ app.post("/admin/brc/:id/delete", requireAdmin, async (req, res) => {
 
     // Remove all gallery images
     if (brc.images && brc.images.length > 0) {
-      brc.images.forEach(img => {
+      brc.images.forEach((img) => {
         const p = path.join(brcUploadDir, img);
         if (fs.existsSync(p)) fs.unlinkSync(p);
       });
@@ -859,22 +1040,29 @@ app.post("/admin/brc/:id/delete", requireAdmin, async (req, res) => {
   }
 });
 
-
 // --------------------
 // PUBLIC BRC ROUTES
 // --------------------
 
 app.get("/brc", async (req, res) => {
   try {
+    if (!isMongoReady()) {
+      return res.render("pages/brc", {
+        title: "Barangay Reading Centers",
+        brcs: [],
+        q: (req.query.q || "").trim(),
+      });
+    }
+
     const q = (req.query.q || "").trim();
 
     const filter = q
       ? {
-        $or: [
-          { name: { $regex: q, $options: "i" } },
-          { statement: { $regex: q, $options: "i" } },
-        ],
-      }
+          $or: [
+            { name: { $regex: q, $options: "i" } },
+            { statement: { $regex: q, $options: "i" } },
+          ],
+        }
       : {};
 
     const brcs = await Brc.find(filter).sort({ name: 1 });
@@ -892,8 +1080,13 @@ app.get("/brc", async (req, res) => {
 
 app.get("/brc/:slug", async (req, res) => {
   try {
+    if (!isMongoReady()) {
+      return res.status(503).render("pages/404", { title: "Error" });
+    }
+
     const brc = await Brc.findOne({ slug: req.params.slug });
-    if (!brc) return res.status(404).render("pages/404", { title: "Not Found" });
+    if (!brc)
+      return res.status(404).render("pages/404", { title: "Not Found" });
 
     res.render("pages/brc-details", {
       title: brc.name,

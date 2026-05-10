@@ -11,19 +11,26 @@
     </div>
     <div class="card-content">
       <h2>Children's Library</h2>
-      <p>Curated storybooks and learning materials designed for young readers.</p>
+      <div class="collection-meta" aria-label="Children's Library count">4,004 books</div>
+      <p>Most Outstanding Children’s Services in the Philippines</p>
     </div>
   </div>
 
-  <div class="card">
+<a href="/collections/fiction" class="card-link">
+  <div class="card fiction-clickable">
     <div class="card-image">
       <img src="/assets/images/collections/fiction.jpg" alt="Fiction Collection">
     </div>
     <div class="card-content">
       <h2>Fiction</h2>
-      <p>Novels, short stories, and literary works for leisure and enrichment.</p>
+      <div class="collection-meta" aria-label="Fiction count">631 books</div>
+      <p>
+        Includes a wide range of classic and contemporary fiction, from both independent presses as well as large publishers.
+      </p>
+      <span class="card-explore-hint">View genres &amp; types &rarr;</span>
     </div>
   </div>
+</a>
 
   <div class="card">
     <div class="card-image">
@@ -31,7 +38,8 @@
     </div>
     <div class="card-content">
       <h2>Filipiniana</h2>
-      <p>Works on Philippine history, culture, society, and literature.</p>
+      <div class="collection-meta" aria-label="Filipiniana count">916 books</div>
+      <p>collections contain materials and resources of Philippine cultures, history and linguistics.</p>
     </div>
   </div>
 
@@ -41,7 +49,8 @@
     </div>
     <div class="card-content">
       <h2>Gender and Development (GAD)</h2>
-      <p>Resources supporting gender equality, inclusion, and community development.</p>
+      <div class="collection-meta" aria-label="GAD count">587 books</div>
+      <p>aims to reach out to the PWD community of Urdaneta City.</p>
     </div>
   </div>
 
@@ -51,7 +60,8 @@
     </div>
     <div class="card-content">
       <h2>General Collection</h2>
-      <p>Wide-ranging books and materials for reading, study, and research.</p>
+      <div class="collection-meta" aria-label="General Collection count">2,652 books</div>
+      <p>hold a wide range of foreign and local authors this are collection of book, including literature, science, math, electronic and many more.</p>
     </div>
   </div>
 
@@ -61,7 +71,8 @@
     </div>
     <div class="card-content">
       <h2>Local History</h2>
-      <p>Documents and references focused on local heritage and community records.</p>
+      <div class="collection-meta" aria-label="Local History count">N/A</div>
+      <p>To promote Urdaneta City Library and showcase local history collection to the researchers, and general public.</p>
     </div>
   </div>
 
@@ -71,7 +82,8 @@
     </div>
     <div class="card-content">
       <h2>Persons With Disabilities</h2>
-      <p>Accessible resources and materials promoting inclusive library services.</p>
+      <div class="collection-meta" aria-label="Persons With Disabilities count">587 books</div>
+      <p>aims to reach out to the PWD community of Urdaneta City.</p>
     </div>
   </div>
 
@@ -81,7 +93,8 @@
     </div>
     <div class="card-content">
       <h2>Periodical</h2>
-      <p>Magazines, newspapers, and journals issued on a regular schedule.</p>
+      <div class="collection-meta" aria-label="Periodical count">N/A</div>
+      <p>Contains newspapers, magazines, journals, and other type of writings that are published.</p>
     </div>
   </div>
 
@@ -91,7 +104,8 @@
     </div>
     <div class="card-content">
       <h2>Reference</h2>
-      <p>Dictionaries, encyclopedias, and guides intended for in-library use.</p>
+      <div class="collection-meta" aria-label="Reference count">431 books</div>
+      <p>including encyclopedias, dictionaries, atlas, biographical works, and almanacs- are helpful tools for verifying facts and getting an overview.</p>
     </div>
   </div>
 
@@ -101,6 +115,7 @@
     </div>
     <div class="card-content">
       <h2>Technical Section</h2>
+      <div class="collection-meta" aria-label="Technical Section count">N/A</div>
       <p>Specialized manuals and technical resources for skills and applied learning.</p>
     </div>
   </div>
@@ -111,7 +126,8 @@
     </div>
     <div class="card-content">
       <h2>Tech4Ed</h2>
-      <p>Digital learning support, ICT resources, and technology-enabled services.</p>
+      <div class="collection-meta" aria-label="Tech4Ed count">52 computers</div>
+      <p>is open to everyone. Individuals who are willing to learn about the basic use of computer and even individuals who want to adopt on the past changing technology.</p>
     </div>
   </div>
 
@@ -121,7 +137,8 @@
     </div>
     <div class="card-content">
       <h2>Thesis</h2>
-      <p>Academic research papers, studies, and approved theses for reference.</p>
+      <div class="collection-meta" aria-label="Thesis count">3,170 books</div>
+      <p>a type of research paper based on your original research.</p>
     </div>
   </div>
 
@@ -131,7 +148,8 @@
     </div>
     <div class="card-content">
       <h2>Vertical Files</h2>
-      <p>Clippings, pamphlets, and subject-based files for quick information access.</p>
+      <div class="collection-meta" aria-label="Vertical Files count">783 books</div>
+      <p>Section of city library where collection of newspaper Clippings of various subjects relevant for research. The articles were taken from national newspapers of the country such as Philippine Daily Inquirer, The Philippine Star, Bulletin, Manila Bulletin, Manila Times.</p>
     </div>
   </div>
 
@@ -215,11 +233,65 @@
     line-height: 1.2;
   }
 
+  /* Count badge under the title */
+  #library-collections .collection-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #5a1d25;
+    background: rgba(184, 145, 72, 0.12);
+    border: 1px solid rgba(184, 145, 72, 0.35);
+    border-radius: 999px;
+    padding: 6px 10px;
+    margin: 0 0 12px;
+    width: fit-content;
+  }
+
   #library-collections p {
     margin: 0;
     color: #666;
     line-height: 1.6;
     font-size: 0.95rem;
+  }
+
+  /* Explore hint on clickable cards */
+  .card-explore-hint {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--wine, #732a33);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all 0.25s ease;
+  }
+
+  .fiction-clickable:hover .card-explore-hint {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .fiction-clickable {
+    position: relative;
+  }
+
+  .fiction-clickable::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold, #b89148), var(--wine, #732a33));
+    border-radius: 0 0 20px 20px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .fiction-clickable:hover::after {
+    opacity: 1;
   }
 
   /* Simple reveal stagger animation (works with your reveal-stagger class) */

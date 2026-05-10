@@ -1,5 +1,12 @@
 <% const pageData=typeof data !=="undefined" ? data : {}; const hero=pageData.hero || {}; const
-  list=Array.isArray(pageData.list) ? pageData.list : []; %>
+  list=Array.isArray(pageData.list) ? pageData.list : [];
+
+  // Split programs by mode
+  const onlinePrograms = list.filter(p => p.mode === 'online');
+  const onsitePrograms = list.filter(p => p.mode === 'onsite');
+  const onlinePostingPrograms = list.filter(p => p.mode === 'online-posting');
+  const outreachPrograms = list.filter(p => p.mode === 'outreach');
+%>
 
   <section class="page-header">
     <h1>
@@ -10,55 +17,181 @@
     </p>
   </section>
 
-  <div class="card" style="padding:18px;">
-    <% if (list.length> 0) { %>
+  <!-- Category Tabs -->
+  <div class="program-tabs-wrapper">
+    <div class="program-tabs" role="tablist" aria-label="Program categories">
+      <button class="program-tab active" role="tab" aria-selected="true" aria-controls="panel-online" id="tab-online" data-tab="online">
+        <span class="tab-icon">🌐</span>
+        <span class="tab-label">Online</span>
+        <span class="tab-count"><%= onlinePrograms.length %></span>
+      </button>
+      <button class="program-tab" role="tab" aria-selected="false" aria-controls="panel-onsite" id="tab-onsite" data-tab="onsite">
+        <span class="tab-icon">🏛️</span>
+        <span class="tab-label">On Site</span>
+        <span class="tab-count"><%= onsitePrograms.length %></span>
+      </button>
+      <button class="program-tab" role="tab" aria-selected="false" aria-controls="panel-online-posting" id="tab-online-posting" data-tab="online-posting">
+        <span class="tab-icon">📱</span>
+        <span class="tab-label">Online Posting</span>
+        <span class="tab-count"><%= onlinePostingPrograms.length %></span>
+      </button>
+      <button class="program-tab" role="tab" aria-selected="false" aria-controls="panel-outreach" id="tab-outreach" data-tab="outreach">
+        <span class="tab-icon">🤝</span>
+        <span class="tab-label">Outreach</span>
+        <span class="tab-count"><%= outreachPrograms.length %></span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card programs-card">
+
+    <!-- Search Bar -->
+    <% if (list.length > 0) { %>
       <div class="search-container"
         style="padding: 10px 10px 20px; border-bottom: 1px solid #eee; margin-bottom: 20px;">
-        <input type="text" class="live-search"
+        <input type="text" class="live-search" id="programSearch"
           style="width: 100%; padding: 10px 0; border: none; border-bottom: 2px solid #ddd; background: transparent; font-size: 1.05rem; box-shadow: none; outline: none; transition: border-color 0.3s ease;"
-          placeholder="Search programs..." data-target=".program-grid .program-tile"
-          data-no-results="#no-program-results" onfocus="this.style.borderBottomColor='#333';"
+          placeholder="Search programs..." onfocus="this.style.borderBottomColor='#333';"
           onblur="this.style.borderBottomColor='#ddd';">
       </div>
-      <% } %>
+    <% } %>
 
-        <div id="no-program-results" class="muted" style="text-align: center; padding: 30px 18px; display: none;">No
-          programs match your search.</div>
+    <div id="no-program-results" class="muted" style="text-align: center; padding: 30px 18px; display: none;">No
+      programs match your search.</div>
 
-        <% if (list.length===0) { %>
-          <div class="empty-state">No programs listed yet.</div>
-          <% } else { %>
+    <% if (list.length===0) { %>
+      <div class="empty-state">No programs listed yet.</div>
+    <% } else { %>
 
-            <!-- GRID -->
-            <div class="program-grid">
-              <% list.forEach((p, idx)=> { %>
-                <button type="button" class="program-tile" data-program="<%= JSON.stringify({
-            slug: p.slug,
-            name: p.name,
-            summary: p.summary || '',
-            description: p.description || '',
-            logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg')
-          }) %>" aria-label="View details for <%= p.name %>">
-                  <div class="program-tile-media">
-                    <img src="<%= p.logo ? p.logo : (" /assets/images/programs/" + p.slug + ".jpg" ) %>"
-                    alt="<%= p.name %> logo"
-                      onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
-                      />
-                  </div>
+      <!-- ONLINE PANEL -->
+      <div class="program-panel active" id="panel-online" role="tabpanel" aria-labelledby="tab-online">
+        <div class="program-grid">
+          <% onlinePrograms.forEach((p, idx) => { %>
+            <button type="button" class="program-tile" data-program="<%= JSON.stringify({
+              slug: p.slug,
+              name: p.name,
+              summary: p.summary || '',
+              description: p.description || '',
+              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
+              mode: p.mode || ''
+            }) %>" aria-label="View details for <%= p.name %>">
+              <div class="program-tile-media">
+                <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
+                alt="<%= p.name %> logo"
+                  onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
+                  />
+              </div>
+              <div class="program-tile-body">
+                <div class="program-tile-title">
+                  <%= p.name %>
+                </div>
+                <div class="program-tile-desc">
+                  <%= p.summary || p.description || "Details coming soon." %>
+                </div>
+              </div>
+              <div class="program-tile-mode-badge mode-online">🌐 Online</div>
+            </button>
+          <% }) %>
+        </div>
+      </div>
 
-                  <div class="program-tile-body">
-                    <div class="program-tile-title">
-                      <%= p.name %>
-                    </div>
-                    <div class="program-tile-desc">
-                      <%= p.summary || p.description || "Details coming soon." %>
-                    </div>
-                  </div>
-                </button>
-                <% }) %>
-            </div>
+      <!-- ON SITE PANEL -->
+      <div class="program-panel" id="panel-onsite" role="tabpanel" aria-labelledby="tab-onsite">
+        <div class="program-grid">
+          <% onsitePrograms.forEach((p, idx) => { %>
+            <button type="button" class="program-tile" data-program="<%= JSON.stringify({
+              slug: p.slug,
+              name: p.name,
+              summary: p.summary || '',
+              description: p.description || '',
+              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
+              mode: p.mode || ''
+            }) %>" aria-label="View details for <%= p.name %>">
+              <div class="program-tile-media">
+                <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
+                alt="<%= p.name %> logo"
+                  onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
+                  />
+              </div>
+              <div class="program-tile-body">
+                <div class="program-tile-title">
+                  <%= p.name %>
+                </div>
+                <div class="program-tile-desc">
+                  <%= p.summary || p.description || "Details coming soon." %>
+                </div>
+              </div>
+              <div class="program-tile-mode-badge mode-onsite">🏛️ On Site</div>
+            </button>
+          <% }) %>
+        </div>
+      </div>
 
-            <% } %>
+      <!-- ONLINE POSTING PANEL -->
+      <div class="program-panel" id="panel-online-posting" role="tabpanel" aria-labelledby="tab-online-posting">
+        <div class="program-grid">
+          <% onlinePostingPrograms.forEach((p, idx) => { %>
+            <button type="button" class="program-tile" data-program="<%= JSON.stringify({
+              slug: p.slug,
+              name: p.name,
+              summary: p.summary || '',
+              description: p.description || '',
+              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
+              mode: p.mode || ''
+            }) %>" aria-label="View details for <%= p.name %>">
+              <div class="program-tile-media">
+                <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
+                alt="<%= p.name %> logo"
+                  onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
+                  />
+              </div>
+              <div class="program-tile-body">
+                <div class="program-tile-title">
+                  <%= p.name %>
+                </div>
+                <div class="program-tile-desc">
+                  <%= p.summary || p.description || "Details coming soon." %>
+                </div>
+              </div>
+              <div class="program-tile-mode-badge mode-posting">📱 Online Posting</div>
+            </button>
+          <% }) %>
+        </div>
+      </div>
+
+      <!-- OUTREACH PANEL -->
+      <div class="program-panel" id="panel-outreach" role="tabpanel" aria-labelledby="tab-outreach">
+        <div class="program-grid">
+          <% outreachPrograms.forEach((p, idx) => { %>
+            <button type="button" class="program-tile" data-program="<%= JSON.stringify({
+              slug: p.slug,
+              name: p.name,
+              summary: p.summary || '',
+              description: p.description || '',
+              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
+              mode: p.mode || ''
+            }) %>" aria-label="View details for <%= p.name %>">
+              <div class="program-tile-media">
+                <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
+                alt="<%= p.name %> logo"
+                  onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
+                  />
+              </div>
+              <div class="program-tile-body">
+                <div class="program-tile-title">
+                  <%= p.name %>
+                </div>
+                <div class="program-tile-desc">
+                  <%= p.summary || p.description || "Details coming soon." %>
+                </div>
+              </div>
+              <div class="program-tile-mode-badge mode-outreach">🤝 Outreach</div>
+            </button>
+          <% }) %>
+        </div>
+      </div>
+
+    <% } %>
   </div>
 
   <!-- MODAL (no navigation) -->
@@ -70,7 +203,7 @@
         <div class="program-modal-head-left">
           <div class="program-modal-logo" id="programModalLogo">📚</div>
           <div>
-            <div class="program-modal-eyebrow">Library Program</div>
+            <div class="program-modal-eyebrow" id="programModalEyebrow">Library Program</div>
             <h2 id="programModalTitle" class="program-modal-title"></h2>
           </div>
         </div>
@@ -94,16 +227,98 @@
 
   <script>
     (function () {
+      // ── Tab switching ──
+      const tabs = document.querySelectorAll('.program-tab');
+      const panels = document.querySelectorAll('.program-panel');
+
+      tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const target = tab.dataset.tab;
+
+          tabs.forEach(t => {
+            t.classList.remove('active');
+            t.setAttribute('aria-selected', 'false');
+          });
+          tab.classList.add('active');
+          tab.setAttribute('aria-selected', 'true');
+
+          panels.forEach(p => {
+            p.classList.remove('active');
+          });
+
+          const targetPanel = document.getElementById('panel-' + target);
+          if (targetPanel) {
+            targetPanel.classList.add('active');
+            // Re-trigger entrance animation
+            targetPanel.style.animation = 'none';
+            targetPanel.offsetHeight; // force reflow
+            targetPanel.style.animation = '';
+          }
+
+          // Clear search when switching tabs
+          const searchInput = document.getElementById('programSearch');
+          if (searchInput) {
+            searchInput.value = '';
+            // Show all tiles in new panel
+            const tiles = targetPanel.querySelectorAll('.program-tile');
+            tiles.forEach(t => t.style.display = '');
+            document.getElementById('no-program-results').style.display = 'none';
+          }
+        });
+      });
+
+      // ── Search (within active panel) ──
+      const searchInput = document.getElementById('programSearch');
+      if (searchInput) {
+        searchInput.addEventListener('input', function () {
+          const query = this.value.toLowerCase().trim();
+          const activePanel = document.querySelector('.program-panel.active');
+          if (!activePanel) return;
+
+          const tiles = activePanel.querySelectorAll('.program-tile');
+          let found = 0;
+
+          tiles.forEach(tile => {
+            const text = tile.textContent.toLowerCase();
+            if (!query || text.includes(query)) {
+              tile.style.display = '';
+              found++;
+            } else {
+              tile.style.display = 'none';
+            }
+          });
+
+          document.getElementById('no-program-results').style.display = found === 0 ? '' : 'none';
+        });
+      }
+
+      // ── Modal ──
       const modal = document.getElementById("programModal");
       const titleEl = document.getElementById("programModalTitle");
       const summaryEl = document.getElementById("programModalSummary");
       const descEl = document.getElementById("programModalDescription");
       const logoEl = document.getElementById("programModalLogo");
+      const eyebrowEl = document.getElementById("programModalEyebrow");
+
+      const modeLabels = {
+        'online': '🌐 Online Program',
+        'onsite': '🏛️ On Site Program',
+        'online-posting': '📱 Online Posting',
+        'outreach': '🤝 Outreach Program'
+      };
 
       function openModal(program) {
         titleEl.textContent = program.name || "";
         summaryEl.textContent = program.summary || "Details coming soon.";
-        descEl.textContent = program.description || "Full description coming soon.";
+
+        // Handle description (can be array or string)
+        if (Array.isArray(program.description)) {
+          descEl.innerHTML = program.description.map(d => '<p>' + d + '</p>').join('');
+        } else {
+          descEl.textContent = program.description || "Full description coming soon.";
+        }
+
+        eyebrowEl.textContent = modeLabels[program.mode] || 'Library Program';
 
         // Render logo image if available
         const logoUrl = program.logo;
@@ -146,3 +361,166 @@
       });
     })();
   </script>
+
+<style>
+  /* ── Program Tabs ── */
+  .program-tabs-wrapper {
+    max-width: 980px;
+    margin: 0 auto 20px;
+  }
+
+  .program-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 6px;
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(184, 145, 72, 0.15);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+  }
+
+  .program-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 20px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    font-family: "Inter", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--muted, #6b6b6b);
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+  }
+
+  .program-tab:hover {
+    background: rgba(184, 145, 72, 0.06);
+    color: var(--royal, #1e3a5f);
+  }
+
+  .program-tab.active {
+    background: #fff;
+    color: var(--wine, #732a33);
+    border-color: rgba(184, 145, 72, 0.25);
+    box-shadow:
+      0 4px 12px rgba(0, 0, 0, 0.06),
+      0 1px 3px rgba(184, 145, 72, 0.1);
+  }
+
+  .tab-icon {
+    font-size: 1.15rem;
+  }
+
+  .tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    background: rgba(184, 145, 72, 0.1);
+    color: var(--muted, #6b6b6b);
+    transition: all 0.3s ease;
+  }
+
+  .program-tab.active .tab-count {
+    background: var(--wine, #732a33);
+    color: #fff;
+  }
+
+  /* ── Tab Panels ── */
+  .program-panel {
+    display: none;
+  }
+
+  .program-panel.active {
+    display: block;
+    animation: panelIn 400ms ease forwards;
+  }
+
+  @keyframes panelIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* ── Mode Badge on Tiles ── */
+  .program-tile-mode-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(8px);
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .mode-online {
+    background: rgba(59, 130, 246, 0.15);
+    color: #1e40af;
+    border: 1px solid rgba(59, 130, 246, 0.25);
+  }
+
+  .mode-onsite {
+    background: rgba(34, 197, 94, 0.15);
+    color: #166534;
+    border: 1px solid rgba(34, 197, 94, 0.25);
+  }
+
+  .mode-posting {
+    background: rgba(168, 85, 247, 0.15);
+    color: #6b21a8;
+    border: 1px solid rgba(168, 85, 247, 0.25);
+  }
+
+  .mode-outreach {
+    background: rgba(245, 158, 11, 0.15);
+    color: #b45309;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+  }
+
+  /* Ensure tile is position:relative for badge */
+  .program-tile {
+    position: relative;
+  }
+
+  /* ── Programs Card Wrapper ── */
+  .programs-card {
+    padding: 18px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .program-tabs {
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .program-tab {
+      padding: 12px 16px;
+      justify-content: flex-start;
+    }
+
+    .tab-label {
+      flex-grow: 1;
+      text-align: left;
+    }
+  }
+</style>

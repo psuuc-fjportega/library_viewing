@@ -1,0 +1,300 @@
+<section class="page-header">
+  <h1>Fiction</h1>
+  <p>
+    Explore popular genres and the different types of fiction readers enjoy.
+  </p>
+</section>
+
+<!-- Genres Section -->
+<section class="fiction-section" id="fiction-genres">
+  <div class="fiction-card">
+    <div class="fiction-card-header">
+      <span class="fiction-card-icon">📚</span>
+      <h2>Genres</h2>
+    </div>
+    <div class="tag-row" role="list">
+      <span class="genre-tag" role="listitem">
+        <span class="genre-emoji">🔍</span> Mysteries
+      </span>
+      <span class="genre-tag" role="listitem">
+        <span class="genre-emoji">🚀</span> Science Fiction
+      </span>
+      <span class="genre-tag" role="listitem">
+        <span class="genre-emoji">💕</span> Romance
+      </span>
+      <span class="genre-tag" role="listitem">
+        <span class="genre-emoji">🐉</span> Fantasy
+      </span>
+      <span class="genre-tag" role="listitem">
+        <span class="genre-emoji">🔫</span> Crime Thrillers
+      </span>
+      <span class="genre-tag genre-tag-wide" role="listitem">
+        <span class="genre-emoji">👩</span>
+        <span>
+          <strong>Chick Lit</strong> — Modern fiction about the lives and romance of young women, usually written by women
+        </span>
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- 3 Types of Fiction Section -->
+<section class="fiction-section" id="fiction-types">
+  <div class="fiction-card">
+    <div class="fiction-card-header">
+      <span class="fiction-card-icon">📖</span>
+      <h2>3 Types of Fiction</h2>
+    </div>
+
+    <div class="fiction-types-grid">
+
+      <a class="fiction-type-card" href="/fiction/literary" aria-label="Learn about Literary Fiction">
+        <div class="fiction-type-number">01</div>
+        <h3>Literary Fiction</h3>
+        <p>
+          A category of novels that emphasize style, character, and theme over plot.
+        </p>
+        <span class="fiction-type-cta">Learn more &rarr;</span>
+      </a>
+
+      <a class="fiction-type-card" href="/fiction/genre" aria-label="Learn about Genre Fiction">
+        <div class="fiction-type-number">02</div>
+        <h3>Genre Fiction</h3>
+        <p>
+          Also known as popular fiction, written to fit into a specific literary genre to appeal to fans already familiar with that genre.
+        </p>
+        <span class="fiction-type-cta">Learn more &rarr;</span>
+      </a>
+
+      <a class="fiction-type-card" href="/fiction/mainstream" aria-label="Learn about Mainstream Fiction">
+        <div class="fiction-type-number">03</div>
+        <h3>Mainstream Fiction</h3>
+        <p>
+          When a literary or genre novel explodes into popularity well beyond its core audience, attracting new readership and bestseller status.
+        </p>
+        <span class="fiction-type-cta">Learn more &rarr;</span>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- Back Button -->
+<div class="fiction-back">
+  <a class="btn btn-outline" href="/collections">&larr; Back to Collections</a>
+</div>
+
+<style>
+  /* ── Fiction Page Layout ── */
+  .fiction-section {
+    max-width: 980px;
+    margin: 0 auto 24px;
+  }
+
+  .fiction-card {
+    background: #fff;
+    border: 1px solid rgba(184, 145, 72, 0.15);
+    border-radius: 20px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  }
+
+  .fiction-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid rgba(184, 145, 72, 0.12);
+  }
+
+  .fiction-card-icon {
+    font-size: 1.6rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(184, 145, 72, 0.1);
+    border-radius: 12px;
+    flex-shrink: 0;
+  }
+
+  .fiction-card-header h2 {
+    margin: 0;
+    font-family: "Playfair Display", serif;
+    font-size: 1.5rem;
+    color: var(--royal, #1e3a5f);
+    font-weight: 700;
+  }
+
+  /* ── Genre Tags ── */
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .genre-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: radial-gradient(circle at top left, rgba(184, 145, 72, 0.08), rgba(253, 251, 245, 1));
+    border: 1px solid rgba(184, 145, 72, 0.2);
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--royal, #1e3a5f);
+    transition: all 0.25s ease;
+    cursor: default;
+  }
+
+  .genre-tag:hover {
+    border-color: var(--gold, #b89148);
+    background: rgba(184, 145, 72, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(184, 145, 72, 0.12);
+  }
+
+  .genre-emoji {
+    font-size: 1.15rem;
+  }
+
+  .genre-tag-wide {
+    flex-basis: 100%;
+    padding: 14px 20px;
+    line-height: 1.5;
+  }
+
+  .genre-tag-wide strong {
+    color: var(--wine, #732a33);
+  }
+
+  /* ── Fiction Type Cards ── */
+  .fiction-types-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+
+  .fiction-type-card {
+    display: flex;
+    flex-direction: column;
+    padding: 28px 24px;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.95), rgba(253, 251, 245, 1));
+    border: 1px solid rgba(184, 145, 72, 0.15);
+    border-radius: 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .fiction-type-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold, #b89148), var(--wine, #732a33));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .fiction-type-card:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 16px 32px rgba(184, 145, 72, 0.12),
+      0 4px 10px rgba(0, 0, 0, 0.06);
+    border-color: rgba(184, 145, 72, 0.35);
+  }
+
+  .fiction-type-card:hover::before {
+    opacity: 1;
+  }
+
+  .fiction-type-number {
+    font-family: "Playfair Display", serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: rgba(184, 145, 72, 0.25);
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+
+  .fiction-type-card h3 {
+    margin: 0 0 10px;
+    font-family: "Playfair Display", serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--royal, #1e3a5f);
+    transition: color 0.2s ease;
+  }
+
+  .fiction-type-card:hover h3 {
+    color: var(--wine, #732a33);
+  }
+
+  .fiction-type-card p {
+    margin: 0;
+    font-size: 0.92rem;
+    color: var(--muted, #6b6b6b);
+    line-height: 1.6;
+    flex-grow: 1;
+  }
+
+  .fiction-type-cta {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--wine, #732a33);
+    opacity: 0;
+    transform: translateX(-6px);
+    transition: all 0.25s ease;
+  }
+
+  .fiction-type-card:hover .fiction-type-cta {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ── Back Button ── */
+  .fiction-back {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 8px 0 0;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .fiction-card {
+      padding: 24px 18px;
+    }
+
+    .fiction-types-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* ── Entrance animation ── */
+  .fiction-section {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: fictionIn 600ms ease forwards;
+  }
+
+  .fiction-section:nth-child(2) {
+    animation-delay: 150ms;
+  }
+
+  @keyframes fictionIn {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
