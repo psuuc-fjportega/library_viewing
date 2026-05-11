@@ -1,0 +1,53 @@
+<section class="page-header">
+  <h1>Admin — <%= program.name %> Images</h1>
+  <p class="muted">Manage images for <%= program.name %></p>
+</section>
+
+<div style="display:flex; gap:10px; margin-bottom:16px;">
+  <a href="/admin/programs-images" class="btn btn-outline">← Back to All Programs</a>
+</div>
+
+<section class="card">
+  <div style="margin-bottom: 20px;">
+    <h3 style="margin-bottom: 10px;">Upload New Images</h3>
+    <form action="/admin/program-images/<%= program.slug %>/upload" method="POST" enctype="multipart/form-data">
+      <div style="margin-bottom: 10px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Images (up to 20)</label>
+        <input type="file" name="images" multiple accept="image/jpeg,image/png,image/webp,image/jpg" 
+               style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+      </div>
+      <div style="margin-bottom: 10px;">
+        <label style="display: block; margin-bottom: 5px; font-weight: 500;">Caption (optional)</label>
+        <input type="text" name="caption" placeholder="Enter a caption for the images" 
+               style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;">
+      </div>
+      <button type="submit" class="btn btn-primary">Upload Images</button>
+    </form>
+  </div>
+
+  <% if (!images || images.length===0) { %>
+    <p class="muted">No images uploaded yet for this program.</p>
+  <% } else { %>
+    <h3 style="margin-bottom: 10px;">Uploaded Images (<%= images.length %>)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+      <% images.forEach(img => { %>
+        <div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden;">
+          <img src="<%= img.url %>" alt="<%= img.caption || program.name %>" 
+               style="width: 100%; height: 150px; object-fit: cover;">
+          <div style="padding: 10px;">
+            <% if (img.caption) { %>
+              <div style="font-size: 0.85rem; margin-bottom: 5px; color: var(--text-muted);"><%= img.caption %></div>
+            <% } %>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px;">
+              <%= new Date(img.createdAt).toLocaleDateString() %>
+            </div>
+            <form action="/admin/program-images/<%= img._id %>/delete" method="POST"
+                  onsubmit="return confirm('Are you sure you want to delete this image?');">
+              <button type="submit" class="btn btn-danger btn-sm" style="width: 100%;">Delete</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>

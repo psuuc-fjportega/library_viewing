@@ -39,6 +39,19 @@
       ><%= brc ? brc.statement : '' %></textarea>
     </div>
 
+    <div class="form-group">
+      <label for="facebookLink">Facebook Link (Optional)</label>
+      <input
+        type="url"
+        id="facebookLink"
+        name="facebookLink"
+        value="<%= brc ? (brc.facebookLink || '') : '' %>"
+        class="form-control"
+        placeholder="https://www.facebook.com/..."
+      >
+      <p class="muted" style="margin-top: 5px; font-size: 0.85rem;">Link to the BRC's Facebook page (will appear as a button in the modal)</p>
+    </div>
+
     <%
       // Resolve cover image: Cloudinary first, then local fallback
       const coverResolved =

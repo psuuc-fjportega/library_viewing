@@ -37,6 +37,7 @@ const crypto = require("crypto");
 
 const Inquiry = require("./models/Inquiry");
 const Brc = require("./models/Brc"); // BRC Model
+const ProgramImage = require("./models/ProgramImage"); // Program Image Model
 
 const cloudinary = require("cloudinary").v2;
 
@@ -330,7 +331,7 @@ app.get("/collections/fiction", (req, res) => {
 });
 
 // Programs list page (loads from JSON)
-app.get("/programs", (req, res) => {
+app.get("/programs", async (req, res) => {
   try {
     const raw = fs.readFileSync(
       path.join(__dirname, "../data/programs.json"),
@@ -338,21 +339,39 @@ app.get("/programs", (req, res) => {
     );
     const data = JSON.parse(raw);
 
+    // Fetch all program images
+    let programImagesMap = {};
+    if (isMongoReady()) {
+      const allImages = await ProgramImage.find({});
+      allImages.forEach(img => {
+        if (!programImagesMap[img.programSlug]) {
+          programImagesMap[img.programSlug] = [];
+        }
+        programImagesMap[img.programSlug].push({
+          url: img.url,
+          caption: img.caption,
+          _id: img._id
+        });
+      });
+    }
+
     res.render("pages/programs", {
       title: "Library Program",
       data,
+      programImagesMap,
     });
   } catch (e) {
     console.error("Failed to load programs.json:", e.message);
     res.render("pages/programs", {
       title: "Library Program",
       data: { list: [] },
+      programImagesMap: {},
     });
   }
 });
 
 // Program details page (dynamic)
-app.get("/programs/:slug", (req, res) => {
+app.get("/programs/:slug", async (req, res) => {
   try {
     const raw = fs.readFileSync(
       path.join(__dirname, "../data/programs.json"),
@@ -367,9 +386,16 @@ app.get("/programs/:slug", (req, res) => {
       return res.status(404).render("pages/404", { title: "Not Found" });
     }
 
+    // Fetch program images from database
+    let programImages = [];
+    if (isMongoReady()) {
+      programImages = await ProgramImage.find({ programSlug: req.params.slug }).sort({ createdAt: -1 });
+    }
+
     res.render("pages/program-details", {
       title: program.name,
       program,
+      programImages,
     });
   } catch (e) {
     console.error("Failed to load programs.json:", e.message);
@@ -860,7 +886,7 @@ app.post(
       if (!isMongoReady())
         return res.status(503).send("Database not configured.");
 
-      const { name, statement } = req.body;
+      const { name, statement, facebookLink } = req.body;
 
       let coverUrl = "";
       let coverPublicId = "";
@@ -889,6 +915,7 @@ app.post(
       await Brc.create({
         name,
         statement,
+        facebookLink: facebookLink || "",
 
         // ✅ Cloudinary fields
         coverUrl,
@@ -945,11 +972,12 @@ app.post(
       const brc = await Brc.findById(req.params.id);
       if (!brc) return res.redirect("/admin/brc");
 
-      const { name, statement } = req.body;
+      const { name, statement, facebookLink } = req.body;
 
       // Update text fields
       brc.name = name;
       brc.statement = statement;
+      brc.facebookLink = facebookLink || "";
 
       // Replace cover image (if new uploaded)
       if (req.files?.coverImage?.[0]) {
@@ -1037,6 +1065,244 @@ app.post("/admin/brc/:id/delete", requireAdmin, async (req, res) => {
   } catch (e) {
     console.error("Error deleting BRC:", e);
     res.status(500).send("Delete failed.");
+  }
+});
+
+// Update affiliation for all existing BRCs
+app.get("/admin/brc/update-affiliation", requireAdmin, async (req, res) => {
+  try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
+    // Lists of affiliated and not affiliated BRCs
+    const affiliated = [
+      "Anonas", "Bayaoas", "Bolaoen", "Bactad East", "Catablan",
+      "Cabaruan", "Casantaan", "Camanang", "Cabuloan", "Consolacion",
+      "Cayambanan", "Dilan Paurido", "Labit Proper", "Labit West",
+      "Nancamaliran West", "Nancayasan", "Oltama", "Pinmaludpod",
+      "San Jose", "Sugcong"
+    ];
+
+    const notAffiliated = [
+      "Camantiles", "Mabanogbog", "Macalong", "Nancalobasaan",
+      "Nancamaliran East", "Poblacion", "Palina East", "Palina West",
+      "Pedro D. Orata", "Sta. Lucia", "San Vicente", "Sto. Domingo",
+      "Tipuso", "Tulong"
+    ];
+
+    // Get all BRCs
+    const brcs = await Brc.find({});
+    let updated = 0;
+    let debugInfo = [];
+
+    for (const brc of brcs) {
+      // Remove "Barangay " prefix if present, then normalize
+      const nameWithoutPrefix = brc.name.replace(/^Barangay\s+/i, "").trim().toLowerCase();
+      const normalizedName = brc.name.trim().toLowerCase();
+      console.log(`Processing BRC: "${brc.name}" -> normalized: "${normalizedName}" -> without prefix: "${nameWithoutPrefix}"`);
+      
+      // Check if name matches any affiliated BRC (case-insensitive)
+      const affiliatedMatch = affiliated.find(name => name.toLowerCase() === nameWithoutPrefix);
+      if (affiliatedMatch) {
+        brc.affiliation = "affiliated";
+        debugInfo.push(`${brc.name} -> affiliated (matched: ${affiliatedMatch})`);
+      }
+      // Check if name matches any not affiliated BRC (case-insensitive)
+      else {
+        const notAffiliatedMatch = notAffiliated.find(name => name.toLowerCase() === nameWithoutPrefix);
+        if (notAffiliatedMatch) {
+          brc.affiliation = "not_affiliated";
+          debugInfo.push(`${brc.name} -> not_affiliated (matched: ${notAffiliatedMatch})`);
+        } else {
+          brc.affiliation = "not_affiliated";
+          debugInfo.push(`${brc.name} -> not_affiliated (no match found)`);
+        }
+      }
+      
+      await brc.save();
+      updated++;
+    }
+
+    console.log("Affiliation Update Debug Info:", debugInfo);
+    res.redirect("/admin/brc");
+  } catch (err) {
+    console.error("Error updating BRC affiliations:", err);
+    res.status(500).send("Error updating affiliations.");
+  }
+});
+
+// --------------------
+// ADMIN PROGRAM IMAGE ROUTES
+// --------------------
+
+// List all programs with image management links
+app.get("/admin/programs-images", requireAdmin, async (req, res) => {
+  try {
+    const raw = fs.readFileSync(
+      path.join(__dirname, "../data/programs.json"),
+      "utf-8",
+    );
+
+    const data = JSON.parse(raw);
+    const list = Array.isArray(data.list) ? data.list : [];
+
+    // Get image counts for each program
+    const programImageCounts = {};
+    if (isMongoReady()) {
+      const allImages = await ProgramImage.find({});
+      allImages.forEach(img => {
+        programImageCounts[img.programSlug] = (programImageCounts[img.programSlug] || 0) + 1;
+      });
+    }
+
+    res.render("pages/admin-programs-images", {
+      title: "Admin — Program Images",
+      programs: list,
+      programImageCounts,
+      layout: "layouts/admin",
+    });
+  } catch (err) {
+    console.error("Error loading programs:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// List program images
+app.get("/admin/program-images/:programSlug", requireAdmin, async (req, res) => {
+  try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
+    const programSlug = req.params.programSlug;
+    
+    // Load programs to get program name
+    const raw = fs.readFileSync(
+      path.join(__dirname, "../data/programs.json"),
+      "utf-8",
+    );
+    const data = JSON.parse(raw);
+    const list = Array.isArray(data.list) ? data.list : [];
+    const program = list.find((p) => p.slug === programSlug);
+
+    if (!program) {
+      return res.status(404).send("Program not found");
+    }
+
+    const images = await ProgramImage.find({ programSlug }).sort({ createdAt: -1 });
+
+    res.render("pages/admin-program-images", {
+      title: `Admin — ${program.name} Images`,
+      program,
+      images,
+      layout: "layouts/admin",
+    });
+  } catch (err) {
+    console.error("Error fetching program images:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// Upload program images
+app.post(
+  "/admin/program-images/:programSlug/upload",
+  requireAdmin,
+  uploadGallery.array("images", 20),
+  async (req, res) => {
+    try {
+      if (!isMongoReady())
+        return res.status(503).send("Database not configured.");
+
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).send("No images received.");
+      }
+
+      const programSlug = req.params.programSlug;
+      const docs = [];
+
+      for (const f of req.files) {
+        const r = await uploadBufferToCloudinary(f.buffer, "ucpl/programs");
+        docs.push({
+          programSlug,
+          url: r.secure_url,
+          publicId: r.public_id,
+          originalName: f.originalname,
+          caption: req.body.caption || "",
+        });
+      }
+
+      await ProgramImage.insertMany(docs);
+      return res.redirect(`/admin/program-images/${programSlug}`);
+    } catch (err) {
+      console.error("Program image upload error:", err);
+      return res.status(500).send("Upload failed.");
+    }
+  },
+);
+
+// Delete program image
+app.post("/admin/program-images/:id/delete", requireAdmin, async (req, res) => {
+  try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
+    const img = await ProgramImage.findById(req.params.id);
+    if (!img) return res.redirect("/admin/inquiries");
+
+    // Delete from Cloudinary
+    if (img.publicId) {
+      await cloudinary.uploader.destroy(img.publicId).catch(() => {});
+    }
+
+    await ProgramImage.findByIdAndDelete(req.params.id);
+    return res.redirect(`/admin/program-images/${img.programSlug}`);
+  } catch (e) {
+    console.error("Program image delete error:", e);
+    return res.status(500).send("Delete failed.");
+  }
+});
+
+// Update Facebook links for BRCs
+app.get("/admin/brc/update-facebook-links", requireAdmin, async (req, res) => {
+  try {
+    if (!isMongoReady())
+      return res.status(503).send("Database not configured.");
+
+    const facebookLinks = {
+      "Barangay Cabaruan": "https://www.facebook.com/cabaruan.brc.2025",
+      "Barangay Bayaoas": "https://www.facebook.com/profile.php?id=100069531942452",
+      "Barangay Sugcong": "https://www.facebook.com/BRCSugcongOfficial",
+      "Barangay Anonas": "https://www.facebook.com/profile.php?id=61559816214012",
+      "Barangay Labit Proper": "https://www.facebook.com/profile.php?id=100077562649359",
+      "Barangay Pinmaludpod": "https://www.facebook.com/BrcPinmaludpod22"
+    };
+
+    const brcs = await Brc.find({});
+    let updated = 0;
+    let debugInfo = [];
+
+    for (const brc of brcs) {
+      const normalizedName = brc.name.replace(/^Barangay\s+/i, "").trim().toLowerCase();
+      console.log(`Processing BRC: "${brc.name}" -> normalized: "${normalizedName}"`);
+      
+      // Check if name matches any BRC in the list (case-insensitive)
+      for (const [brcName, link] of Object.entries(facebookLinks)) {
+        const normalizedListName = brcName.replace(/^Barangay\s+/i, "").trim().toLowerCase();
+        if (normalizedName === normalizedListName) {
+          brc.facebookLink = link;
+          debugInfo.push(`${brc.name} -> ${link}`);
+          updated++;
+          break;
+        }
+      }
+      
+      await brc.save();
+    }
+
+    console.log("Facebook Link Update Debug Info:", debugInfo);
+    res.redirect("/admin/brc");
+  } catch (err) {
+    console.error("Error updating BRC Facebook links:", err);
+    res.status(500).send("Error updating Facebook links.");
   }
 });
 

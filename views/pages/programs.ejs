@@ -4,7 +4,6 @@
   // Split programs by mode
   const onlinePrograms = list.filter(p => p.mode === 'online');
   const onsitePrograms = list.filter(p => p.mode === 'onsite');
-  const onlinePostingPrograms = list.filter(p => p.mode === 'online-posting');
   const outreachPrograms = list.filter(p => p.mode === 'outreach');
 %>
 
@@ -29,11 +28,6 @@
         <span class="tab-icon">🏛️</span>
         <span class="tab-label">On Site</span>
         <span class="tab-count"><%= onsitePrograms.length %></span>
-      </button>
-      <button class="program-tab" role="tab" aria-selected="false" aria-controls="panel-online-posting" id="tab-online-posting" data-tab="online-posting">
-        <span class="tab-icon">📱</span>
-        <span class="tab-label">Online Posting</span>
-        <span class="tab-count"><%= onlinePostingPrograms.length %></span>
       </button>
       <button class="program-tab" role="tab" aria-selected="false" aria-controls="panel-outreach" id="tab-outreach" data-tab="outreach">
         <span class="tab-icon">🤝</span>
@@ -127,38 +121,6 @@
         </div>
       </div>
 
-      <!-- ONLINE POSTING PANEL -->
-      <div class="program-panel" id="panel-online-posting" role="tabpanel" aria-labelledby="tab-online-posting">
-        <div class="program-grid">
-          <% onlinePostingPrograms.forEach((p, idx) => { %>
-            <button type="button" class="program-tile" data-program="<%= JSON.stringify({
-              slug: p.slug,
-              name: p.name,
-              summary: p.summary || '',
-              description: p.description || '',
-              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
-              mode: p.mode || ''
-            }) %>" aria-label="View details for <%= p.name %>">
-              <div class="program-tile-media">
-                <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
-                alt="<%= p.name %> logo"
-                  onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
-                  />
-              </div>
-              <div class="program-tile-body">
-                <div class="program-tile-title">
-                  <%= p.name %>
-                </div>
-                <div class="program-tile-desc">
-                  <%= p.summary || p.description || "Details coming soon." %>
-                </div>
-              </div>
-              <div class="program-tile-mode-badge mode-posting">📱 Online Posting</div>
-            </button>
-          <% }) %>
-        </div>
-      </div>
-
       <!-- OUTREACH PANEL -->
       <div class="program-panel" id="panel-outreach" role="tabpanel" aria-labelledby="tab-outreach">
         <div class="program-grid">
@@ -218,6 +180,11 @@
         <p id="programModalDescription"></p>
       </div>
 
+      <div class="program-modal-section" id="programImagesSection" style="display: none;">
+        <h3>Program Images</h3>
+        <div id="programImagesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; margin-top: 12px;"></div>
+      </div>
+
       <div class="program-modal-actions">
         <a class="btn btn-primary" href="/contact">Inquire Now</a>
         <button class="btn" type="button" data-close="1">Close</button>
@@ -225,8 +192,17 @@
     </div>
   </div>
 
+  <!-- LIGHTBOX for fullscreen image viewing -->
+  <div id="lightbox" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; cursor: pointer;">
+    <img id="lightboxImage" src="" alt="Fullscreen view" style="max-width: 90%; max-height: 90%; object-fit: contain;">
+    <button onclick="closeLightbox()" style="position: absolute; top: 20px; right: 20px; background: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+  </div>
+
   <script>
     (function () {
+      // Get program images map from server
+      const programImagesMap = JSON.parse('<%- JSON.stringify(programImagesMap || {}) %>');
+
       // ── Tab switching ──
       const tabs = document.querySelectorAll('.program-tab');
       const panels = document.querySelectorAll('.program-panel');
@@ -303,7 +279,6 @@
       const modeLabels = {
         'online': '🌐 Online Program',
         'onsite': '🏛️ On Site Program',
-        'online-posting': '📱 Online Posting',
         'outreach': '🤝 Outreach Program'
       };
 
@@ -326,6 +301,25 @@
           logoEl.innerHTML = '<img src="' + logoUrl + '" alt="' + (program.name || "Program") + ' logo" onerror="this.parentElement.textContent=\'📚\'"/>';
         } else {
           logoEl.textContent = "📚";
+        }
+
+        // Display program images if available
+        const imagesSection = document.getElementById('programImagesSection');
+        const imagesContainer = document.getElementById('programImagesContainer');
+        const programImages = programImagesMap[program.slug] || [];
+
+        if (programImages.length > 0) {
+          imagesSection.style.display = 'block';
+          imagesContainer.innerHTML = programImages.map(img => `
+            <div style="position: relative; border-radius: 6px; overflow: hidden; cursor: pointer;" onclick="openLightbox('${img.url}')">
+              <img src="${img.url}" alt="${img.caption || program.name}" 
+                   style="width: 100%; height: 120px; object-fit: cover;"
+                   onerror="this.parentElement.style.display='none'">
+              ${img.caption ? `<div style="padding: 6px; background: var(--bg-secondary); font-size: 0.8rem;">${img.caption}</div>` : ''}
+            </div>
+          `).join('');
+        } else {
+          imagesSection.style.display = 'none';
         }
 
         modal.classList.add("is-open");
@@ -358,8 +352,29 @@
 
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+        if (e.key === "Escape") closeLightbox();
       });
     })();
+
+    // Lightbox functions (outside the IIFE to be globally accessible)
+    function openLightbox(imageUrl) {
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImage = document.getElementById('lightboxImage');
+      lightboxImage.src = imageUrl;
+      lightbox.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      const lightbox = document.getElementById('lightbox');
+      lightbox.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    // Close lightbox when clicking on the background
+    document.getElementById('lightbox').addEventListener('click', function(e) {
+      if (e.target === this) closeLightbox();
+    });
   </script>
 
 <style>
@@ -482,12 +497,6 @@
     background: rgba(34, 197, 94, 0.15);
     color: #166534;
     border: 1px solid rgba(34, 197, 94, 0.25);
-  }
-
-  .mode-posting {
-    background: rgba(168, 85, 247, 0.15);
-    color: #6b21a8;
-    border: 1px solid rgba(168, 85, 247, 0.25);
   }
 
   .mode-outreach {

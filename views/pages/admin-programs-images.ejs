@@ -1,0 +1,46 @@
+<section class="page-header">
+  <h1>Admin — Program Images</h1>
+  <p class="muted">Manage images for all library programs</p>
+</section>
+
+<section class="card">
+  <% if (!programs || programs.length===0) { %>
+    <p class="muted">No programs available.</p>
+  <% } else { %>
+    <div style="overflow-x:auto;">
+      <table style="width:100%; border-collapse: collapse; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color);">
+            <th style="padding: 10px;">Program Name</th>
+            <th style="padding: 10px;">Mode</th>
+            <th style="padding: 10px;">Images Count</th>
+            <th style="padding: 10px;">Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <% programs.forEach(p => { %>
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 10px; font-weight: bold;">
+                <%= p.name %>
+              </td>
+
+              <td style="padding: 10px;">
+                <%= p.mode || '-' %>
+              </td>
+
+              <td style="padding: 10px;">
+                <%= programImageCounts[p.slug] || 0 %> images
+              </td>
+
+              <td style="padding: 10px; display:flex; gap:8px;">
+                <a href="/admin/program-images/<%= p.slug %>" class="btn btn-primary btn-sm">Manage Images</a>
+                <a href="/programs/<%= p.slug %>" class="btn btn-outline btn-sm">View Program</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>

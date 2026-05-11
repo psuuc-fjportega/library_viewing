@@ -57,7 +57,8 @@
             name: b.name,
             summary: summary,
             description: b.statement,
-            logo: resolvedCover
+            logo: resolvedCover,
+            facebookLink: b.facebookLink || ""
           }) %>"
           aria-label="View details for <%= b.name %>"
         >
@@ -74,7 +75,14 @@
           </div>
 
           <div class="program-tile-body">
-            <div class="program-tile-title"><%= b.name %></div>
+            <div class="program-tile-title">
+              <%= b.name %>
+              <% if (b.affiliation === 'affiliated') { %>
+                <span style="display: inline-block; margin-left: 8px; padding: 2px 8px; background-color: #28a745; color: white; font-size: 0.7rem; border-radius: 12px; font-weight: 500;">Affiliated</span>
+              <% } else { %>
+                <span style="display: inline-block; margin-left: 8px; padding: 2px 8px; background-color: #6c757d; color: white; font-size: 0.7rem; border-radius: 12px; font-weight: 500;">Not Affiliated</span>
+              <% } %>
+            </div>
             <div class="program-tile-desc"><%= summary %></div>
           </div>
         </button>
@@ -108,7 +116,8 @@
     </div>
 
     <div class="program-modal-actions">
-      <a class="btn btn-primary" id="programModalLink" href="#">View Full Details</a>
+      <a class="btn btn-primary" id="programModalFacebookLink" href="#" target="_blank" rel="noopener noreferrer" style="display: none;">Facebook Page</a>
+      <a class="btn" id="programModalLink" href="#">View Full Details</a>
       <button class="btn" type="button" data-close="1">Close</button>
     </div>
   </div>
@@ -122,12 +131,25 @@
     const descEl = document.getElementById("programModalDescription");
     const logoEl = document.getElementById("programModalLogo");
     const linkEl = document.getElementById("programModalLink");
+    const facebookLinkEl = document.getElementById("programModalFacebookLink");
 
     function openModal(program) {
       titleEl.textContent = program.name || "";
       summaryEl.textContent = program.summary || "Details coming soon.";
       descEl.textContent = program.description || "Full description coming soon.";
       linkEl.href = "/brc/" + program.slug;
+
+      // Handle Facebook link
+      if (program.facebookLink) {
+        if (facebookLinkEl) {
+          facebookLinkEl.href = program.facebookLink;
+          facebookLinkEl.style.display = 'inline-block';
+        }
+      } else {
+        if (facebookLinkEl) {
+          facebookLinkEl.style.display = 'none';
+        }
+      }
 
       const logoUrl = program.logo;
       if (logoUrl) {
