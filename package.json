@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
-    "postinstall": "npm rebuild"
+    "preinstall": "rm -rf node_modules package-lock.json || true"
   },
   "keywords": [],
   "author": "",
