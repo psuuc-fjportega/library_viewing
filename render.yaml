@@ -1,6 +1,0 @@
-services:
-  - type: web
-    name: library-viewing
-    env: node
-    buildCommand: rm -rf node_modules package-lock.json && npm install
-    startCommand: npm start
