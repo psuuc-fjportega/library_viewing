@@ -178,7 +178,7 @@ const askLibrarianLimiter = rateLimit({
 
 // Static files
 app.use(
-  express.static(path.join(__dirname, "../../public"), {
+  express.static(path.join(__dirname, "../public"), {
     // Avoid stale assets during local development (e.g., landing-bg.jpg changes)
     maxAge: process.env.NODE_ENV === "production" ? "1d" : 0,
     etag: true,
@@ -188,7 +188,7 @@ app.use(
 
 const galleryUploadDir = path.join(
   __dirname,
-  "../../public/assets/gallery/uploads",
+  "../public/assets/gallery/uploads",
 );
 
 // ensure folder exists
@@ -218,7 +218,7 @@ const upload = multer({
 });
 
 // BRC Multer Setup
-const brcUploadDir = path.join(__dirname, "../../public/assets/brc/uploads");
+const brcUploadDir = path.join(__dirname, "../public/assets/brc/uploads");
 if (!fs.existsSync(brcUploadDir))
   fs.mkdirSync(brcUploadDir, { recursive: true });
 
@@ -245,7 +245,7 @@ const uploadGallery = multer({
 
 // View engine
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "../../views"));
+app.set("views", path.join(__dirname, "../views"));
 
 // Layouts
 app.use(expressLayouts);
