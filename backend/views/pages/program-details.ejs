@@ -39,9 +39,17 @@
       <div class="section-divider"></div>
     </div>
     <div class="program-description">
-      <p>
-        <%= program.description || "Full description coming soon." %>
-      </p>
+      <% if (Array.isArray(program.description)) { %>
+        <% program.description.forEach(p=> { %>
+          <p>
+            <%= p %>
+          </p>
+          <% }) %>
+            <% } else { %>
+              <p>
+                <%= program.description || "Full description coming soon." %>
+              </p>
+              <% } %>
     </div>
   </section>
 
@@ -51,28 +59,29 @@
       <h2>Program Images</h2>
       <div class="section-divider"></div>
     </div>
-    
-    <% if (programImages && programImages.length > 0) { %>
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
-        <% programImages.forEach(img => { %>
+
+    <% if (programImages && programImages.length> 0) { %>
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+        <% programImages.forEach(img=> { %>
           <div style="position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-            <img src="<%= img.url %>" alt="<%= img.caption || program.name %>" 
-                 style="width: 100%; height: 200px; object-fit: cover;"
-                 onerror="this.parentElement.innerHTML='<div class=\'img-placeholder\'><span>📷</span><p>Image failed to load</p></div>'">
+            <img src="<%= img.url %>" alt="<%= img.caption || program.name %>"
+              style="width: 100%; height: 200px; object-fit: cover;"
+              onerror="this.parentElement.innerHTML='<div class=\'img-placeholder\'><span>📷</span><p>Image failed to load</p></div>'">
             <% if (img.caption) { %>
               <div style="padding: 10px; background: var(--bg-secondary); font-size: 0.9rem;">
                 <%= img.caption %>
               </div>
-            <% } %>
+              <% } %>
           </div>
-        <% }) %>
+          <% }) %>
       </div>
-    <% } else { %>
-      <div class="img-placeholder" style="margin: 40px auto; max-width: 400px; text-align: center;">
-        <span style="font-size: 3rem; display: block; margin-bottom: 10px;">📷</span>
-        <p style="color: var(--text-muted);">No images available for this program yet.</p>
-      </div>
-    <% } %>
+      <% } else { %>
+        <div class="img-placeholder" style="margin: 40px auto; max-width: 400px; text-align: center;">
+          <span style="font-size: 3rem; display: block; margin-bottom: 10px;">📷</span>
+          <p style="color: var(--text-muted);">No images available for this program yet.</p>
+        </div>
+        <% } %>
   </section>
 
 </section>

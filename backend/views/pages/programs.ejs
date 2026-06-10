@@ -68,16 +68,9 @@
             <div class="program-panel active" id="panel-online" role="tabpanel" aria-labelledby="tab-online">
               <div class="program-grid">
                 <% onlinePrograms.forEach((p, idx)=> { %>
-                  <button type="button" class="program-tile" data-program="<%= JSON.stringify({
-              slug: p.slug,
-              name: p.name,
-              summary: p.summary || '',
-              description: p.description || '',
-              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
-              mode: p.mode || ''
-            }) %>" aria-label="View details for <%= p.name %>">
+                  <a href="/programs/<%= p.slug %>" class="program-tile" aria-label="View details for <%= p.name %>">
                     <div class="program-tile-media">
-                      <img src="<%= p.logo ? p.logo : (" /assets/images/programs/" + p.slug + ".jpg" ) %>"
+                      <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
                       alt="<%= p.name %> logo"
                         onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
                         />
@@ -91,7 +84,7 @@
                       </div>
                     </div>
                     <div class="program-tile-mode-badge mode-online">🌐 Online</div>
-                  </button>
+                  </a>
                   <% }) %>
               </div>
             </div>
@@ -100,16 +93,9 @@
             <div class="program-panel" id="panel-onsite" role="tabpanel" aria-labelledby="tab-onsite">
               <div class="program-grid">
                 <% onsitePrograms.forEach((p, idx)=> { %>
-                  <button type="button" class="program-tile" data-program="<%= JSON.stringify({
-              slug: p.slug,
-              name: p.name,
-              summary: p.summary || '',
-              description: p.description || '',
-              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
-              mode: p.mode || ''
-            }) %>" aria-label="View details for <%= p.name %>">
+                  <a href="/programs/<%= p.slug %>" class="program-tile" aria-label="View details for <%= p.name %>">
                     <div class="program-tile-media">
-                      <img src="<%= p.logo ? p.logo : (" /assets/images/programs/" + p.slug + ".jpg" ) %>"
+                      <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
                       alt="<%= p.name %> logo"
                         onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
                         />
@@ -123,7 +109,7 @@
                       </div>
                     </div>
                     <div class="program-tile-mode-badge mode-onsite">🏛️ On Site</div>
-                  </button>
+                  </a>
                   <% }) %>
               </div>
             </div>
@@ -132,16 +118,9 @@
             <div class="program-panel" id="panel-outreach" role="tabpanel" aria-labelledby="tab-outreach">
               <div class="program-grid">
                 <% outreachPrograms.forEach((p, idx)=> { %>
-                  <button type="button" class="program-tile" data-program="<%= JSON.stringify({
-              slug: p.slug,
-              name: p.name,
-              summary: p.summary || '',
-              description: p.description || '',
-              logo: p.logo || ('/assets/images/programs/' + p.slug + '.jpg'),
-              mode: p.mode || ''
-            }) %>" aria-label="View details for <%= p.name %>">
+                  <a href="/programs/<%= p.slug %>" class="program-tile" aria-label="View details for <%= p.name %>">
                     <div class="program-tile-media">
-                      <img src="<%= p.logo ? p.logo : (" /assets/images/programs/" + p.slug + ".jpg" ) %>"
+                      <img src="<%= p.logo ? p.logo : ("/assets/images/programs/" + p.slug + ".jpg") %>"
                       alt="<%= p.name %> logo"
                         onerror="this.outerHTML='<div class=&quot;program-logo-fallback&quot;>📚</div>'"
                         />
@@ -155,7 +134,7 @@
                       </div>
                     </div>
                     <div class="program-tile-mode-badge mode-outreach">🤝 Outreach</div>
-                  </button>
+                  </a>
                   <% }) %>
               </div>
             </div>
@@ -212,7 +191,7 @@
   <script>
     (function () {
       // Get program images map from server
-      const programImagesMap = JSON.parse('<%- JSON.stringify(programImagesMap || {}) %>');
+      const programImagesMap = <%- JSON.stringify(programImagesMap || {}) %>;
 
       // ── Tab switching ──
       const tabs = document.querySelectorAll('.program-tab');
@@ -344,17 +323,7 @@
         document.body.style.overflow = "";
       }
 
-      // Tile click -> open modal
-      document.querySelectorAll(".program-tile").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          try {
-            const program = JSON.parse(btn.getAttribute("data-program"));
-            openModal(program);
-          } catch (e) {
-            console.error("Failed to parse program data", e);
-          }
-        });
-      });
+      // (Bypassed modal: Tiles now link directly to details pages)
 
       // Close handlers
       modal.addEventListener("click", (e) => {
@@ -520,6 +489,8 @@
     /* Ensure tile is position:relative for badge */
     .program-tile {
       position: relative;
+      text-decoration: none;
+      color: inherit;
     }
 
     /* ── Programs Card Wrapper ── */

@@ -382,9 +382,13 @@ app.get("/programs", async (req, res) => {
   }
 });
 
-// Program details page (dynamic)
+// Program details page (dynamic or custom template)
 app.get("/programs/:slug", async (req, res) => {
   try {
+    const slug = req.params.slug;
+    const customTemplatePath = path.join(__dirname, "../views/pages", `${slug}.ejs`);
+    const hasCustomTemplate = fs.existsSync(customTemplatePath);
+
     const raw = fs.readFileSync(
       path.join(__dirname, "../data/programs.json"),
       "utf-8",
@@ -392,16 +396,25 @@ app.get("/programs/:slug", async (req, res) => {
 
     const data = JSON.parse(raw);
     const list = Array.isArray(data.list) ? data.list : [];
-    const program = list.find((p) => p.slug === req.params.slug);
+    const program = list.find((p) => p.slug === slug);
 
-    if (!program) {
+    if (!program && !hasCustomTemplate) {
       return res.status(404).render("pages/404", { title: "Not Found" });
     }
 
     // Fetch program images from database
     let programImages = [];
     if (isMongoReady()) {
-      programImages = await ProgramImage.find({ programSlug: req.params.slug }).sort({ createdAt: -1 });
+      programImages = await ProgramImage.find({ programSlug: slug }).sort({ createdAt: -1 });
+    }
+
+    if (hasCustomTemplate) {
+      const defaultTitle = slug.charAt(0).toUpperCase() + slug.slice(1).replace(/-/g, ' ');
+      return res.render(`pages/${slug}`, {
+        title: program ? program.name : defaultTitle,
+        program: program || {},
+        programImages,
+      });
     }
 
     res.render("pages/program-details", {
@@ -410,7 +423,7 @@ app.get("/programs/:slug", async (req, res) => {
       programImages,
     });
   } catch (e) {
-    console.error("Failed to load programs.json:", e.message);
+    console.error("Failed to load program details:", e.message);
     res.status(500).send("Server error");
   }
 });
